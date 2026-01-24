@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="no-referrer">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>昵称校验码</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #0d0d0d;
+      color: #ddd;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 24px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .box {
+      background: #111;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    .option {
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 6px;
+      background: #1a1a1a;
+      cursor: pointer;
+    }
+    .option:hover {
+      background: #222;
+    }
+    .key-box {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 32px;
+      letter-spacing: 6px;
+      background: #111;
+      padding: 20px;
+      border-radius: 8px;
+      user-select: all;
+    }
+    button {
+      margin-top: 16px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #222;
+      color: #ddd;
+    }
+    button:hover {
+      background: #333;
+    }
+    #quiz, #result {
+      display: none;
+    }
+  </style>
+
+  <!-- Cloudflare Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+
+<body>
+<div class="container">
+  <h1>昵称校验码</h1>
+
+  <!-- Turnstile -->
+  <div
+    class="cf-turnstile"
+    data-sitekey="0x4AAAAAACOcDeApDiGInsi6"
+    data-callback="onVerified">
+  </div>
+
+  <!-- 问题区 -->
+  <div id="quiz" class="box"></div>
+
+  <!-- 结果区 -->
+  <div id="result" class="box">
+    <p>
+      复制下面的字符，到 xmpp 群组中，将其加在你群昵称的最前面，即可获取发言权限。
+    </p>
+    <div id="key" class="key-box"></div>
+    <div style="text-align:center;">
+      <button onclick="copyKey()">一键复制</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "为什么当代特色社会主义的印度仍存在阶级矛盾？",
+    options: [
+      "印度的贫富分化足以说明问题，财富持续向富人集中",
+      "印度特色社会主义是假社会主义，看国家权力机关就知道",
+      "虽然印度是社会主义，但执政党仍需改进",
+      "感觉前两个选项都是，第三个也许不确定，或者是错的"
+    ],
+    answer: 3
+  },
+  {
+    q: "盒子 A 有红卫兵帽子，B 有红领巾，如何交换？",
+    options: [
+      "先借助 C 盒子中转",
+      "双手直接互换",
+      "全部倒出来再重新放",
+      "以上三项"
+    ],
+    answer: 3
+  },
+  {
+    q: "常数L,L+x=sin a，x图像可能在哪些象限？",
+    options: [
+      "第一、第四象限",
+      "第三、第四象限",
+      "四个象限",
+      "第一、第二象限"
+    ],
+    answer: 2
+  }
+];
+
+function onVerified() {
+  showRandomQuestion();
+}
+
+function showRandomQuestion() {
+  const q = questions[Math.floor(Math.random() * questions.length)];
+  const quiz = document.getElementById("quiz");
+  quiz.innerHTML = `<h3>${q.q}</h3>`;
+  q.options.forEach((opt, idx) => {
+    const div = document.createElement("div");
+    div.className = "option";
+    div.innerText = opt;
+    div.onclick = () => checkAnswer(idx === q.answer);
+    quiz.appendChild(div);
+  });
+  quiz.style.display = "block";
+}
+
+function checkAnswer(correct) {
+  if (!correct) {
+    alert("答案不正确，请刷新页面重试。");
+    return;
+  }
+  document.getElementById("quiz").style.display = "none";
+  loadKey();
+}
+
+function loadKey() {
+  fetch("https://audit.rofg2.org/key.json")
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById("key").innerText = data.key;
+      document.getElementById("result").style.display = "block";
+    })
+    .catch(() => {
+      alert("无法获取校验码，请稍后再试。");
+    });
+}
+
+function copyKey() {
+  const text = document.getElementById("key").innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    alert("已复制到剪贴板");
+  });
+}
+</script>
+
+</body>
+</html>
+
