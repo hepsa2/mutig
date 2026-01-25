@@ -378,10 +378,10 @@
             if (correctCount === 5) {
                 resultSection.innerHTML = `
                     <div class="result">
-                        <div class="result-text">祝贺，你的勇气和果断、智慧得到了认可。</div>
+                        <div class="result-text">祝贺，你的勇气和智慧已被认可，地址meowko@yax.im</div>
                         <div class="passkey">
                             <div class="passkey-label">你的口令：</div>
-                            <div class="passkey-value" id="passkey">#$27H%4&*eW.P</div>
+                            <div class="passkey-value" id="passkey">#$27H%</div>
                             <button class="btn copy-btn" onclick="copyPasskey()">一键复制口令</button>
                         </div>
                     </div>
@@ -400,7 +400,7 @@
         function copyPasskey() {
             const passkey = document.getElementById('passkey').textContent;
             navigator.clipboard.writeText(passkey).then(() => {
-                alert('口令已复制到剪贴板！');
+                alert('口令已复制到剪贴板');
             });
         }
     </script>
