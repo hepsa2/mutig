@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五试炼-无限剑制</title>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            background: linear-gradient(135deg, #1a0000 0%, #0d0000 50%, #1a0a0a 100%);
+            color: #ffcccc;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(20, 0, 0, 0.85);
+            border: 2px solid #8b0000;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 0 40px rgba(139, 0, 0, 0.6);
+        }
+        
+        h1 {
+            color: #ff4444;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px rgba(255, 68, 68, 0.8);
+            font-size: 2.5em;
+        }
+        
+        .intro-text {
+            font-size: 1.2em;
+            line-height: 2;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #ffaaaa;
+            text-shadow: 0 0 5px rgba(255, 170, 170, 0.3);
+        }
+        
+        .intro-image {
+            width: 100%;
+            max-width: 700px;
+            height: auto;
+            display: block;
+            margin: 30px auto;
+            border: 3px solid #8b0000;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+        }
+        
+        .verification-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px 0;
+        }
+        
+        .question {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: rgba(30, 0, 0, 0.5);
+            border-radius: 8px;
+            border: 1px solid #5a0000;
+        }
+        
+        .question-number {
+            color: #ff6666;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .question-text {
+            font-size: 1.15em;
+            color: #ffaaaa;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .option {
+            background: rgba(40, 0, 0, 0.6);
+            border: 2px solid #5a0000;
+            padding: 15px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #ffcccc;
+            font-size: 1.05em;
+        }
+        
+        .option:hover {
+            background: rgba(60, 0, 0, 0.8);
+            border-color: #8b0000;
+            transform: translateX(8px);
+        }
+        
+        .option.selected {
+            background: rgba(139, 0, 0, 0.7);
+            border-color: #ff4444;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #8b0000, #ff0000);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            font-weight: bold;
+            display: block;
+            margin: 30px auto;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #ff0000, #ff4444);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
+        }
+        
+        .btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .result {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .result-text {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #ffaaaa;
+        }
+        
+        .passkey {
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #ff4444;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+            box-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
+        }
+        
+        .passkey-label {
+            color: #ff6666;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+        
+        .passkey-value {
+            color: #ffff00;
+            font-size: 2em;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(255, 255, 0, 0.6);
+            margin: 20px 0;
+        }
+        
+        .copy-btn {
+            background: linear-gradient(135deg, #006400, #00ff00);
+            padding: 12px 30px;
+            font-size: 1em;
+        }
+        
+        .copy-btn:hover {
+            background: linear-gradient(135deg, #00ff00, #00ff88);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .fail-text {
+            color: #ff6666;
+            font-size: 1.8em;
+            text-shadow: 0 0 15px rgba(255, 102, 102, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .intro-text, .question-text {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="intro-section">
+            <h1>五试炼-无限剑制</h1>
+            <div class="intro-text">
+                你来到了五试炼-无限剑制，通过下面五个问题，你才能在这个腐朽世界中找到口令，得到你想遇见之人的关爱......伸手摸摸你的胸膛吧----那里是否有足够的勇气？
+            </div>
+            <img src="fl.jpg" alt="试炼之门" class="intro-image">
+            
+            <div class="verification-container">
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAACOsgNQ_Fr_5kUiH" data-callback="onVerify"></div>
+            </div>
+            
+            <button class="btn" id="start-btn" disabled>我准备好了</button>
+        </div>
+        
+        <div id="questions-section" class="hidden"></div>
+        
+        <div id="result-section" class="hidden"></div>
+    </div>
+
+    <script>
+        let verified = false;
+        let userAnswers = {};
+        
+        const questions = [
+            {
+                id: 1,
+                text: "你在学校遇到了不懂的问题。你再三请教老师，老师三番五次讲解后你还是不能理解。此时你请教同学，但你周围的同学对你态度都十分恶劣。你该怎么办？",
+                options: [
+                    "A. 放弃这个问题的理解",
+                    "B. 上网查询或使用AI",
+                    "C. 与周围的同学争论",
+                    "D. 自己再次钻研问题"
+                ],
+                correct: "B"
+            },
+            {
+                id: 2,
+                text: "已知6x²+x-2>0，求x的取值范围",
+                options: [
+                    "A. (-∞,-1/2)U(2/3,+∞)",
+                    "B. (-∞,-2/3)U(3/4,+∞)",
+                    "C. (-∞,-3/4)U(2/3,+∞)",
+                    "D. (-∞,-2/3)U(1/2,+∞)"
+                ],
+                correct: "D"
+            },
+            {
+                id: 3,
+                text: "假如你出身在经济状况不乐观的家庭，你是个学生，经常与父母就学业问题闹矛盾，父母总是执迷于你的成绩，你却无所谓，因为就业形势和家庭经济地位本已注定，剩下只有一条出路。有一次你还看见母亲在房间角落揩去泪水。这天你因频繁迟到被学校处分，还和校领导顶撞。母亲收到了消息，询问你具体事情经过，你会？",
+                options: [
+                    "A. 把真实事情经过讲给母亲听",
+                    "B. 隐瞒事情经过，敷衍了事",
+                    "C. 讲经过，但自己做一些必要修改",
+                    "D. 不予理睬并做自己喜欢的事"
+                ],
+                correct: "B"
+            },
+            {
+                id: 4,
+                text: "你在一个移民到中国的日本家庭，你作为父亲，孩子在学校被同学和老师霸凌，孩子自觉寻找校长求助，却被校长掌掴。请问你该怎么办？",
+                options: [
+                    "A. 领着孩子前往学校，先往校长脸上扇，再进行理论",
+                    "B. 领着孩子前往学校，平静与校长争论",
+                    "C. 不做不必要商量，带孩子转学",
+                    "D. 为了保证孩子的学业，只与班主任尝试商量"
+                ],
+                correct: "A"
+            },
+            {
+                id: 5,
+                text: "你之前和童年时期一起玩耍长大的朋友，在6岁时约定，以后即便自己付出多大的代价，都要保护对方。那是个秋风萧瑟的秋天，风刺向面庞，你们彼此目光坚毅，在最高的山坡上望着整个灰蒙蒙的城市。现在与朋友重新聚会时，对方的态度非常冷淡，完全成了不良青年，当你提起这件事时，对方只是不予理睬。现在的某个夜晚，你偶然在天桥不远处看到了戴兜帽的他......他的身子已经翻过了栏杆，只剩右手两根手指还没脱离天桥的栏杆。这已经是必然为时已晚。你该怎么做？",
+                options: [
+                    "A. 小步跑上前，大声喊叫",
+                    "B. 用最快速度飞奔向他，不顾一切伸手到栏杆外试图拉住",
+                    "C. 飞奔向他同时喊名字，尽管已经来不及了",
+                    "D. 一切已经没了，当年的誓言就算仍被他认可，也只不过是孩子的美好幻想。立即报警做好必要的事就够了"
+                ],
+                correct: "B"
+            }
+        ];
+        
+        // Cloudflare验证回调
+        function onVerify(token) {
+            verified = true;
+            document.getElementById('start-btn').disabled = false;
+        }
+        
+        // 随机打乱数组
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+        
+        // 开始测试
+        document.getElementById('start-btn').addEventListener('click', function() {
+            if (!verified) return;
+            
+            document.getElementById('intro-section').classList.add('hidden');
+            const questionsSection = document.getElementById('questions-section');
+            questionsSection.classList.remove('hidden');
+            
+            const shuffledQuestions = shuffle(questions);
+            let html = '';
+            
+            shuffledQuestions.forEach((q, index) => {
+                html += `
+                    <div class="question" data-qid="${q.id}">
+                        <div class="question-number">问题 ${index + 1}</div>
+                        <div class="question-text">${q.text}</div>
+                        <div class="options">
+                            ${q.options.map(opt => {
+                                const letter = opt.charAt(0);
+                                return `<div class="option" data-answer="${letter}">${opt}</div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '<button class="btn" id="submit-btn">提交答案</button>';
+            questionsSection.innerHTML = html;
+            
+            // 选项点击事件
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    const question = this.closest('.question');
+                    const qid = question.dataset.qid;
+                    
+                    question.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    userAnswers[qid] = this.dataset.answer;
+                });
+            });
+            
+            // 提交按钮
+            document.getElementById('submit-btn').addEventListener('click', submitAnswers);
+        });
+        
+        // 提交答案
+        function submitAnswers() {
+            if (Object.keys(userAnswers).length < 5) {
+                alert('请回答所有问题！');
+                return;
+            }
+            
+            let correctCount = 0;
+            questions.forEach(q => {
+                if (userAnswers[q.id] === q.correct) {
+                    correctCount++;
+                }
+            });
+            
+            document.getElementById('questions-section').classList.add('hidden');
+            const resultSection = document.getElementById('result-section');
+            resultSection.classList.remove('hidden');
+            
+            if (correctCount === 5) {
+                resultSection.innerHTML = `
+                    <div class="result">
+                        <div class="result-text">祝贺，你的勇气和果断、智慧得到了认可。</div>
+                        <div class="passkey">
+                            <div class="passkey-label">你的口令：</div>
+                            <div class="passkey-value" id="passkey">#$27H%4&*eW.P</div>
+                            <button class="btn copy-btn" onclick="copyPasskey()">一键复制口令</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultSection.innerHTML = `
+                    <div class="result">
+                        <div class="fail-text">很遗憾，你未能通过试炼。</div>
+                        <div class="result-text" style="margin-top: 20px;">勇气、智慧与果断，缺一不可。</div>
+                    </div>
+                `;
+            }
+        }
+        
+        // 复制口令
+        function copyPasskey() {
+            const passkey = document.getElementById('passkey').textContent;
+            navigator.clipboard.writeText(passkey).then(() => {
+                alert('口令已复制到剪贴板！');
+            });
+        }
+    </script>
+</body>
+</html>
