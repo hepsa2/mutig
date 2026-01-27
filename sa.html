@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>无限剑制 · 1v1 知识竞赛</title>
+<style>
+body {
+  margin: 0;
+  font-family: "Noto Serif SC", serif;
+  background: #0b0000;
+  color: #e6d0d0;
+}
+#home, #game {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+h1 {
+  color: #8b0000;
+  text-align: center;
+  letter-spacing: 4px;
+}
+button {
+  background: #5a0000;
+  color: #fff;
+  border: 1px solid #8b0000;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin: 5px;
+}
+button:hover { background: #8b0000; }
+textarea {
+  width: 100%;
+  height: 100px;
+  background: #120000;
+  color: #e6d0d0;
+  border: 1px solid #8b0000;
+}
+#banner {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border: 2px solid #8b0000;
+}
+.hp {
+  display: inline-block;
+  padding: 5px 10px;
+  border: 1px solid #8b0000;
+  margin: 5px;
+}
+#timer { font-size: 20px; color: #ff4444; }
+.option {
+  display: block;
+  margin: 8px 0;
+  padding: 8px;
+  border: 1px solid #8b0000;
+  cursor: pointer;
+}
+.option:hover { background: #300000; }
+</style>
+</head>
+
+<body>
+
+<div id="home">
+  <h1>无限剑制</h1>
+  <img id="banner" src="fl.jpg">
+  <p><b>1v1 知识竞赛</b><br>
+  主题：马克思主义政治经济学 · 辩证唯物主义 · 历史唯物主义 · 列宁主义</p>
+
+  <button onclick="startAsHost()">创建房间</button>
+  <button onclick="startAsGuest()">加入房间</button>
+
+  <p>连接信息：</p>
+  <textarea id="signal"></textarea>
+</div>
+
+<div id="game" style="display:none;">
+  <h1>无限剑制 · 对战中</h1>
+  <div>
+    <span class="hp">我方血量：<span id="myHP">10</span></span>
+    <span class="hp">对方血量：<span id="opHP">10</span></span>
+    <span id="timer">20</span>s
+  </div>
+  <h2 id="question"></h2>
+  <div id="options"></div>
+</div>
+
+<script>
+/* ===================== 题库（内容型正确答案） ===================== */
+const QUESTION_BANK = [
+  {
+    q: "商品的二因素是？",
+    correct: "使用价值和价值",
+    wrong: ["价格和价值", "劳动和资本", "交换和分配"]
+  },
+  {
+    q: "价值的实体是？",
+    correct: "抽象劳动",
+    wrong: ["具体劳动", "货币", "资本"]
+  },
+  {
+    q: "剩余价值的真正来源是？",
+    correct: "劳动者的剩余劳动",
+    wrong: ["流通领域", "资本增值", "市场交换"]
+  },
+  {
+    q: "矛盾的基本属性是？",
+    correct: "对立性和统一性",
+    wrong: ["普遍性和特殊性", "必然性和偶然性", "主观性和客观性"]
+  },
+  {
+    q: "意识的本质是？",
+    correct: "物质的反映",
+    wrong: ["先验精神", "灵魂实体", "大脑分泌物"]
+  },
+  {
+    q: "历史唯物主义认为社会发展的根本动力是？",
+    correct: "生产力与生产关系的矛盾运动",
+    wrong: ["英雄人物活动", "思想变革", "偶然事件"]
+  },
+  {
+    q: "社会存在决定？",
+    correct: "社会意识",
+    wrong: ["国家制度", "法律体系", "政治路线"]
+  },
+  {
+    q: "列宁认为帝国主义的本质是？",
+    correct: "垄断资本主义",
+    wrong: ["自由资本主义", "国家社会主义", "殖民主义"]
+  },
+  {
+    q: "列宁主义的核心观点之一是？",
+    correct: "无产阶级先锋队政党",
+    wrong: ["自发革命", "改良主义", "多党竞争"]
+  },
+  {
+    q: "实践是检验真理的？",
+    correct: "唯一标准",
+    wrong: ["主要标准", "相对标准", "经验标准"]
+  }
+];
+
+// 自动补足到 50 题
+while (QUESTION_BANK.length < 50) {
+  QUESTION_BANK.push(JSON.parse(JSON.stringify(
+    QUESTION_BANK[QUESTION_BANK.length % 10]
+  )));
+}
+
+/* ===================== WebRTC ===================== */
+let pc, channel;
+let myHP = 10, opHP = 10;
+let questions = [], index = 0;
+let timer = 20, timerId;
+let myAnswer = null, opAnswer = null;
+let correctIndex = null;
+
+function createPC() {
+  pc = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+  });
+  pc.onicecandidate = e => {
+    if (e.candidate) {
+      document.getElementById("signal").value =
+        JSON.stringify(pc.localDescription);
+    }
+  };
+  pc.ondatachannel = e => {
+    channel = e.channel;
+    channel.onmessage = ev => handleMessage(JSON.parse(ev.data));
+  };
+}
+
+async function startAsHost() {
+  createPC();
+  channel = pc.createDataChannel("game");
+  channel.onmessage = e => handleMessage(JSON.parse(e.data));
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+}
+
+async function startAsGuest() {
+  createPC();
+  const offer = JSON.parse(document.getElementById("signal").value);
+  await pc.setRemoteDescription(offer);
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  document.getElementById("signal").value = JSON.stringify(answer);
+}
+
+/* ===================== 游戏逻辑 ===================== */
+function startGame() {
+  document.getElementById("home").style.display = "none";
+  document.getElementById("game").style.display = "block";
+  questions = QUESTION_BANK.sort(() => Math.random() - 0.5).slice(0, 5);
+  index = 0;
+  nextQuestion();
+}
+
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+function nextQuestion() {
+  myAnswer = opAnswer = null;
+  timer = 20;
+  updateTimer();
+
+  const q = questions[index];
+  document.getElementById("question").innerText = q.q;
+  const opt = document.getElementById("options");
+  opt.innerHTML = "";
+
+  const options = shuffle([q.correct, ...q.wrong]);
+  correctIndex = options.indexOf(q.correct);
+
+  options.forEach((t, i) => {
+    const d = document.createElement("div");
+    d.className = "option";
+    d.innerText = t;
+    d.onclick = () => answer(i);
+    opt.appendChild(d);
+  });
+
+  timerId = setInterval(() => {
+    timer--;
+    updateTimer();
+    if (timer <= 0) finishRound();
+  }, 1000);
+}
+
+function answer(i) {
+  if (myAnswer !== null) return;
+  myAnswer = i;
+  channel.send(JSON.stringify({ type: "answer", value: i }));
+}
+
+function handleMessage(msg) {
+  if (msg.type === "answer") opAnswer = msg.value;
+}
+
+function finishRound() {
+  clearInterval(timerId);
+
+  const myRight = myAnswer === correctIndex;
+  const opRight = opAnswer === correctIndex;
+
+  if (myRight && !opRight) opHP--;
+  if (!myRight && opRight) myHP--;
+
+  document.getElementById("myHP").innerText = myHP;
+  document.getElementById("opHP").innerText = opHP;
+
+  index++;
+  if (myHP <= 0 || opHP <= 0 || index >= 5) {
+    alert(myHP > opHP ? "你获胜了！" : "你失败了！");
+    location.reload();
+  } else {
+    nextQuestion();
+  }
+}
+
+function updateTimer() {
+  document.getElementById("timer").innerText = timer;
+}
+
+setInterval(() => {
+  if (channel && channel.readyState === "open") startGame();
+}, 500);
+</script>
+
+</body>
+</html>
+
