@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>随机抽取二次元插画</title>
+
+<style>
+body {
+    margin: 0;
+    background: #111;
+    color: #eee;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont;
+    text-align: center;
+    padding: 30px;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #666;
+    background: #222;
+    color: #fff;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #333;
+}
+
+.image-box {
+    margin-top: 30px;
+}
+
+.image-box img {
+    max-width: 90%;
+    max-height: 70vh;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎴 随机抽取二次元插画</h1>
+
+<button onclick="randomImage()">抽一张</button>
+
+<div class="image-box">
+    <img id="displayImage" src="" alt="">
+</div>
+
+<script>
+// 👇 在这里写入你的图片文件名
+const images = [
+    "foto/1.png",
+    "foto/2.png",
+    "foto/3.png",
+    "foto/4.png"
+];
+
+function randomImage() {
+    const randomIndex = Math.floor(Math.random() * images.length);
+    document.getElementById("displayImage").src = images[randomIndex];
+}
+</script>
+
+</body>
+</html>
