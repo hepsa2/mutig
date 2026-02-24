@@ -1,90 +1,189 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="no-referrer">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>二次元亚文化导航</title>
+<title>二次元盒子导航</title>
 
 <style>
 body {
   margin: 0;
-    background: #111;
-      color: #eee;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont;
-        }
+  background: #111;
+  color: #eee;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  overflow-x: hidden;
+}
 
-        .container {
-          max-width: 800px;
-            margin: auto;
-              padding: 24px;
-                text-align: center;
-                }
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 24px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
 
-                h1 {
-                  font-size: 32px;
-                    font-weight: 700;
-                      margin-bottom: 20px;
-                      }
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
 
-                      .image-box {
-                        width: 100%;
-                          aspect-ratio: 4 / 3;
-                            overflow: hidden;
-                              border-radius: 10px;
-                                margin-bottom: 24px;
-                                }
+.image-box {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
 
-                                .image-box img {
-                                  width: 100%;
-                                    height: 100%;
-                                      object-fit: cover;
-                                      }
+.image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-                                      .nav {
-                                        display: flex;
-                                          flex-direction: column;
-                                            gap: 14px;
-                                            }
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
-                                            .nav a {
-                                              text-decoration: none;
-                                                color: #fff;
-                                                  border: 1px solid #666;
-                                                    padding: 14px;
-                                                      border-radius: 8px;
-                                                        font-size: 18px;
-                                                        }
+.nav a {
+  text-decoration: none;
+  color: #fff;
+  border: 1px solid #666;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 18px;
+}
 
-                                                        .nav a:hover {
-                                                          background: #222;
-                                                          }
-                                                          </style>
-                                                          </head>
+.nav a:hover {
+  background: #222;
+}
 
-                                                          <body>
-                                                          <div class="container">
+/* 星空与流星 canvas */
+#meteorCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+</style>
+</head>
 
-                                                          <h1>二次元亚文化导航</h1>
+<body>
 
-                                                          <div class="image-box">
-                                                            <img src="aaa.png" alt="图片">
-                                                            </div>
+<canvas id="meteorCanvas"></canvas>
 
-                                                            <div class="nav">
-                                                              <a href="jieshao">本网站介绍</a>
-                                                              <a href="network.html">安全知识</a>
-                                                                <a href="foto.html">抽美图喵</a>
-                                                                  
-                                                                    <a href="download.html">文件下载</a>
-                                                                      <a href="wenw/wx.html">文艺展示</a>
-                                                                  </div>
+<div class="container">
+  <h1>二次元亚文化导航</h1>
 
-                                                                
+  <div class="image-box">
+    <img src="aaa.png" alt="图片">
+  </div>
 
-                                                                  </body>
-                                                                  </html>
-                                                                  
+  <div class="nav">
+    <a href="jieshao">本网站介绍</a>
+    <a href="network.html">安全知识</a>
+    <a href="foto.html">抽美图喵</a>
+    <a href="download.html">文件下载</a>
+    <a href="wenw/wx.html">文艺展示</a>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const canvas = document.getElementById("meteorCanvas");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const stars = [];
+  const meteors = [];
+  const duration = 6000;
+  const startTime = Date.now();
+
+  // 生成背景星星
+  for (let i = 0; i < 120; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 2,
+      opacity: Math.random()
+    });
+  }
+
+  function createMeteor() {
+    return {
+      x: Math.random() * canvas.width + 200,
+      y: Math.random() * canvas.height / 2,
+      length: Math.random() * 120 + 80,
+      speed: Math.random() * 10 + 6,
+      opacity: 1
+    };
+  }
+
+  function drawStars() {
+    stars.forEach(s => {
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255," + s.opacity + ")";
+      ctx.fill();
+    });
+  }
+
+  function drawMeteor(m) {
+    const gradient = ctx.createLinearGradient(
+      m.x, m.y,
+      m.x - m.length, m.y + m.length
+    );
+    gradient.addColorStop(0, "rgba(255,255,255," + m.opacity + ")");
+    gradient.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.beginPath();
+    ctx.moveTo(m.x, m.y);
+    ctx.lineTo(m.x - m.length, m.y + m.length);
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawStars();
+
+    if (Math.random() < 0.4) {
+      meteors.push(createMeteor());
+    }
+
+    meteors.forEach((m, index) => {
+      m.x -= m.speed;
+      m.y += m.speed;
+      m.opacity -= 0.02;
+
+      if (m.opacity <= 0) {
+        meteors.splice(index, 1);
+      } else {
+        drawMeteor(m);
+      }
+    });
+
+    if (Date.now() - startTime < duration) {
+      requestAnimationFrame(animate);
+    } else {
+      canvas.remove();
+    }
+  }
+
+  animate();
+});
+</script>
+
+</body>
+</html>
