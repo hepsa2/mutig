@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+
+    <meta http-equiv="Content-Security-Policy"
+          content="
+              default-src 'self';
+              img-src 'self' data:;
+              style-src 'self' 'unsafe-inline';
+              script-src 'self';
+              object-src 'none';
+              base-uri 'none';
+              frame-ancestors 'none';
+          ">
+
+    <!-- 禁止页面被 iframe 嵌套（防点击劫持，兼容旧浏览器） -->
+    <meta http-equiv="X-Frame-Options" content="DENY">
+
+    <!-- 禁止浏览器猜测 MIME 类型 -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- 限制 Referrer 泄露 -->
+    <meta name="referrer" content="no-referrer">
+
+    <!-- 移动端视口 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>革命的文艺</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #0d0d0d;
+            color: #ddd;
+            font-family: system-ui;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 24px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 14px;
+            background: #111;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #8ab4ff;
+            text-decoration: none;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>文学作品在线浏览</h1>
+
+        <ul>
+            <li><a href="wenw/text1.html">血与镜（悬疑/恐怖/惊悚）</a></li>
+             <li><a href="wenw/text2.html">A派与战斗的牛马（讽刺/搞笑）</a></li>
+        </ul>
+    </div>
+</body>
+  </html>
