@@ -1,186 +1,571 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<meta charset="UTF-8">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>二次元盒子导航</title>
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
+:root {
+  --primary: #00ff9f;
+  --secondary: #00d4ff;
+  --accent: #ff0080;
+  --dark: #0a0a0f;
+  --dark-alpha: rgba(10, 10, 15, 0.95);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  background: #111;
-  color: #eee;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  background: var(--dark);
+  color: #fff;
+  font-family: 'Noto Sans SC', sans-serif;
   overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
 }
 
+/* Canvas 星空背景 */
+#meteorCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 汉堡菜单按钮 */
+.menu-btn {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-btn:hover {
+  background: rgba(0, 255, 159, 0.1);
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+.menu-btn span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(0, 255, 159, 0.5);
+}
+
+/* X 形态 */
+.menu-btn.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.menu-btn.active span:nth-child(2) {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.menu-btn.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* 侧边栏 */
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background: var(--dark-alpha);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(0, 255, 159, 0.2);
+  z-index: 999;
+  transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 120px 40px 40px;
+  box-shadow: -10px 0 50px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar.active {
+  right: 0;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebar-nav a {
+  text-decoration: none;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 400;
+  padding: 18px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.02);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-nav a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 159, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.sidebar-nav a:hover::before {
+  left: 100%;
+}
+
+.sidebar-nav a:hover {
+  border-color: var(--primary);
+  background: rgba(0, 255, 159, 0.05);
+  transform: translateX(-5px);
+  box-shadow: 0 5px 20px rgba(0, 255, 159, 0.3);
+}
+
+/* 主容器 */
 .container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: auto;
-  padding: 24px;
-  text-align: center;
+  padding: 40px 24px;
   position: relative;
   z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-h1 {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 20px;
+/* 主标题动画 */
+.hero-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(32px, 8vw, 100px);
+  font-weight: 900;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+  letter-spacing: clamp(2px, 1vw, 8px);
+  text-transform: uppercase;
+  animation: titleReveal 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  opacity: 0;
 }
 
+@keyframes titleReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(50px);
+    filter: blur(20px);
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+.hero-title::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: glowPulse 3s ease-in-out infinite;
+  z-index: -1;
+  filter: blur(15px);
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.6;
+    filter: blur(15px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(20px);
+  }
+}
+
+.hero-title span {
+  display: inline-block;
+  animation: letterFloat 3s ease-in-out infinite;
+}
+
+.hero-title span:nth-child(1) { animation-delay: 0s; }
+.hero-title span:nth-child(2) { animation-delay: 0.1s; }
+.hero-title span:nth-child(3) { animation-delay: 0.2s; }
+.hero-title span:nth-child(4) { animation-delay: 0.3s; }
+.hero-title span:nth-child(5) { animation-delay: 0.4s; }
+.hero-title span:nth-child(6) { animation-delay: 0.5s; }
+.hero-title span:nth-child(7) { animation-delay: 0.6s; }
+.hero-title span:nth-child(8) { animation-delay: 0.7s; }
+.hero-title span:nth-child(9) { animation-delay: 0.8s; }
+
+@keyframes letterFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* 图片容器 */
 .image-box {
   width: 100%;
+  max-width: 800px;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  border-radius: 10px;
-  margin-bottom: 24px;
+  border-radius: 20px;
+  margin-bottom: 40px;
+  position: relative;
+  border: 2px solid rgba(0, 255, 159, 0.3);
+  box-shadow: 0 10px 50px rgba(0, 255, 159, 0.2);
+  animation: fadeInUp 1.5s ease 0.5s backwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.image-box::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+  border-radius: 20px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-box:hover::before {
+  opacity: 0.6;
+  animation: borderRotate 3s linear infinite;
+}
+
+@keyframes borderRotate {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
 }
 
 .image-box img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
 }
 
-.nav {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.image-box:hover img {
+  transform: scale(1.05);
 }
 
-.nav a {
-  text-decoration: none;
-  color: #fff;
-  border: 1px solid #666;
-  padding: 14px;
-  border-radius: 8px;
+/* 装饰性文字 */
+.subtitle {
   font-size: 18px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-top: 20px;
+  letter-spacing: 4px;
+  font-weight: 300;
+  animation: fadeIn 2s ease 1s backwards;
 }
 
-.nav a:hover {
-  background: #222;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-/* 星空与流星 canvas */
-#meteorCanvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 1;
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    right: -100%;
+  }
+  
+  .hero-title {
+    font-size: 32px;
+    letter-spacing: 2px;
+    margin-bottom: 40px;
+  }
+  
+  .menu-btn {
+    top: 20px;
+    right: 20px;
+  }
+  
+  .image-box {
+    border-radius: 15px;
+  }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary);
 }
 </style>
 </head>
-
 <body>
 
+<!-- 星空背景 Canvas -->
 <canvas id="meteorCanvas"></canvas>
 
-<div class="container">
-  <h1>二次元亚文化导航</h1>
+<!-- 汉堡菜单按钮 -->
+<div class="menu-btn" id="menuBtn">
+  <span></span>
+  <span></span>
+  <span></span>
+</div>
 
+<!-- 侧边栏遮罩 -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- 侧边栏 -->
+<div class="sidebar" id="sidebar">
+  <nav class="sidebar-nav">
+    <a href="jieshao">次元哦喵</a>
+    <a href="network.html">安全知识</a>
+    <a href="foto.html">抽美图哦</a>
+    <a href="download.html">文件下载</a>
+    <a href="wenw/wx.html">文艺展示</a>
+  </nav>
+</div>
+
+<!-- 主容器 -->
+<div class="container">
+  <h1 class="hero-title" data-text="WWW.ROFG2.ORG">
+    <span>R</span><span>O</span><span>F</span><span>G</span><span>2</span><span>.</span><span>O</span><span>R</span><span>G</span>
+  </h1>
+  
   <div class="image-box">
     <img src="aaa.png" alt="图片">
   </div>
-
-  <div class="nav">
-    <a href="jieshao">→  次元哦喵  ←</a>
-    <a href="network.html">→  安全知识  ←</a>
-    <a href="foto.html">→  抽美图哦  ←</a>
-    <a href="download.html">→  文件下载  ←</a>
-    <a href="wenw/wx.html">→  文艺展示  ←</a>
-  </div>
+  
+  <p class="subtitle">二次元亚文化导航</p>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+// ========== 菜单切换 ==========
+const menuBtn = document.getElementById('menuBtn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
 
+function toggleMenu() {
+  menuBtn.classList.toggle('active');
+  sidebar.classList.toggle('active');
+  sidebarOverlay.classList.toggle('active');
+}
+
+menuBtn.addEventListener('click', toggleMenu);
+sidebarOverlay.addEventListener('click', toggleMenu);
+
+// ESC 键关闭菜单
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+    toggleMenu();
+  }
+});
+
+// ========== 流星雨动画 ==========
+document.addEventListener("DOMContentLoaded", function () {
   const canvas = document.getElementById("meteorCanvas");
   const ctx = canvas.getContext("2d");
-
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
+  
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  
   const stars = [];
   const meteors = [];
-  const duration = 6000;
-  const startTime = Date.now();
-
+  
   // 生成背景星星
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 150; i++) {
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       size: Math.random() * 2,
-      opacity: Math.random()
+      opacity: Math.random() * 0.8 + 0.2,
+      twinkleSpeed: Math.random() * 0.02 + 0.01
     });
   }
-
+  
   function createMeteor() {
     return {
       x: Math.random() * canvas.width + 200,
       y: Math.random() * canvas.height / 2,
       length: Math.random() * 120 + 80,
       speed: Math.random() * 10 + 6,
-      opacity: 1
+      opacity: 1,
+      color: Math.random() > 0.5 ? 'rgba(0, 255, 159,' : 'rgba(0, 212, 255,'
     };
   }
-
+  
   function drawStars() {
     stars.forEach(s => {
+      // 闪烁效果
+      s.opacity += s.twinkleSpeed;
+      if (s.opacity > 1 || s.opacity < 0.2) {
+        s.twinkleSpeed = -s.twinkleSpeed;
+      }
+      
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255," + s.opacity + ")";
+      ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
       ctx.fill();
+      
+      // 添加星光效果
+      if (Math.random() > 0.98) {
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = 'rgba(0, 255, 159, 0.8)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
     });
   }
-
+  
   function drawMeteor(m) {
     const gradient = ctx.createLinearGradient(
       m.x, m.y,
       m.x - m.length, m.y + m.length
     );
-    gradient.addColorStop(0, "rgba(255,255,255," + m.opacity + ")");
-    gradient.addColorStop(1, "rgba(255,255,255,0)");
-
+    gradient.addColorStop(0, m.color + m.opacity + ')');
+    gradient.addColorStop(1, m.color + '0)');
+    
     ctx.beginPath();
     ctx.moveTo(m.x, m.y);
     ctx.lineTo(m.x - m.length, m.y + m.length);
     ctx.strokeStyle = gradient;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = m.color + '0.8)';
     ctx.stroke();
+    ctx.shadowBlur = 0;
   }
-
+  
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+    
     drawStars();
-
-    if (Math.random() < 0.4) {
+    
+    // 随机生成流星
+    if (Math.random() < 0.03) {
       meteors.push(createMeteor());
     }
-
+    
+    // 更新和绘制流星
     meteors.forEach((m, index) => {
       m.x -= m.speed;
       m.y += m.speed;
-      m.opacity -= 0.02;
-
+      m.opacity -= 0.015;
+      
       if (m.opacity <= 0) {
         meteors.splice(index, 1);
       } else {
         drawMeteor(m);
       }
     });
-
-    if (Date.now() - startTime < duration) {
-      requestAnimationFrame(animate);
-    } else {
-      canvas.remove();
-    }
+    
+    requestAnimationFrame(animate);
   }
-
+  
   animate();
 });
 </script>
