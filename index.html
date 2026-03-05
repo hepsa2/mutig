@@ -48,62 +48,6 @@ z-index:1;
 pointer-events:none;
 }
 
-/* 音乐控制按钮 */
-.music-control{
-position:fixed;
-bottom:30px;
-right:30px;
-width:60px;
-height:60px;
-background:rgba(0,255,159,0.1);
-border:2px solid var(--primary);
-border-radius:50%;
-cursor:pointer;
-z-index:1000;
-display:flex;
-align-items:center;
-justify-content:center;
-transition:all 0.3s ease;
-backdrop-filter:blur(10px);
-animation:musicPulse 2s ease-in-out infinite;
-}
-
-.music-control:hover{
-background:rgba(0,255,159,0.2);
-transform:scale(1.1);
-box-shadow:0 0 20px rgba(0,255,159,0.5);
-}
-
-.music-icon{
-width:24px;
-height:24px;
-color:var(--primary);
-transition:all 0.3s ease;
-}
-
-@keyframes musicPulse{
-0%, 100%{
-box-shadow:0 0 10px rgba(0,255,159,0.3);
-}
-50%{
-box-shadow:0 0 25px rgba(0,255,159,0.6);
-}
-}
-
-/* 音乐控制按钮响应式 */
-@media (max-width: 768px){
-.music-control{
-bottom:20px;
-right:20px;
-width:50px;
-height:50px;
-}
-.music-icon{
-width:20px;
-height:20px;
-}
-}
-
 /* 汉堡按钮 */
 
 .menu-btn{
@@ -333,6 +277,7 @@ font-size:17px;
 line-height:1.9;
 margin:40px auto;
 text-align:left;
+min-height: 400px;
 }
 
 .story-line{
@@ -372,23 +317,6 @@ right: 20px;
 </head>
 
 <body>
-
-<!-- 背景音乐 -->
-<audio id="bgMusic" loop>
-<source src="a1.mp3" type="audio/mpeg">
-您的浏览器不支持音频播放
-</audio>
-
-<!-- 音乐控制按钮 -->
-<div class="music-control" id="musicControl">
-<svg class="music-icon play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-<polygon points="5 3 19 12 5 21 5 3"></polygon>
-</svg>
-<svg class="music-icon pause-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
-<rect x="6" y="4" width="4" height="16"></rect>
-<rect x="14" y="4" width="4" height="16"></rect>
-</svg>
-</div>
 
 <canvas id="meteorCanvas"></canvas>
 
@@ -437,7 +365,7 @@ right: 20px;
 <img src="aaa.png" alt="二次元图片">
 </div>
 
-<!-- 段落 -->
+<!-- 段落 - 初始隐藏,滚动时显示 -->
 
 <div class="story">
 
@@ -481,55 +409,6 @@ right: 20px;
 
 <script>
 
-/* ====== 音乐播放控制 ====== */
-
-const bgMusic = document.getElementById('bgMusic');
-const musicControl = document.getElementById('musicControl');
-const playIcon = document.querySelector('.play-icon');
-const pauseIcon = document.querySelector('.pause-icon');
-
-let isPlaying = false;
-
-// 尝试自动播放（现代浏览器可能会阻止）
-window.addEventListener('load', () => {
-bgMusic.play().then(() => {
-isPlaying = true;
-playIcon.style.display = 'none';
-pauseIcon.style.display = 'block';
-}).catch(() => {
-// 自动播放被阻止，显示播放按钮提示用户
-console.log('自动播放被阻止，请点击按钮播放音乐');
-});
-});
-
-// 音乐控制按钮点击事件
-musicControl.onclick = () => {
-if (isPlaying) {
-bgMusic.pause();
-playIcon.style.display = 'block';
-pauseIcon.style.display = 'none';
-isPlaying = false;
-} else {
-bgMusic.play();
-playIcon.style.display = 'none';
-pauseIcon.style.display = 'block';
-isPlaying = true;
-}
-};
-
-// 监听音乐状态变化
-bgMusic.addEventListener('pause', () => {
-isPlaying = false;
-playIcon.style.display = 'block';
-pauseIcon.style.display = 'none';
-});
-
-bgMusic.addEventListener('play', () => {
-isPlaying = true;
-playIcon.style.display = 'none';
-pauseIcon.style.display = 'block';
-});
-
 /* ====== 菜单交互 ====== */
 
 const menuBtn=document.getElementById('menuBtn');
@@ -548,28 +427,31 @@ sidebar.classList.remove('active');
 overlay.classList.remove('active');
 };
 
-/* 下拉菜单 */
+/* ====== 下拉菜单 ====== */
 
 document.querySelector(".dropdown-btn").onclick=function(e){
 e.stopPropagation();
 document.getElementById("safeMenu").classList.toggle("active");
 };
 
-/* 滚动文字动画 */
+/* ====== 滚动文字动画（仅在滚动到视口时触发）====== */
 
 const lines=document.querySelectorAll(".story-line");
 
 const observer=new IntersectionObserver(entries=>{
-entries.forEach(entry=>{
+entries.forEach((entry, index)=>{
 if(entry.isIntersecting){
+// 添加延迟效果，让文字逐行出现
+setTimeout(()=>{
 entry.target.classList.add("show");
+}, index * 100); // 每行延迟100ms
 }
 });
 },{threshold:0.3});
 
 lines.forEach(line=>observer.observe(line));
 
-/* 流星雨效果 */
+/* ====== 优化的流星雨效果 ====== */
 
 const canvas=document.getElementById("meteorCanvas");
 const ctx=canvas.getContext("2d");
@@ -602,49 +484,60 @@ this.reset();
 }
 
 reset(){
-this.x=Math.random()*canvas.width;
-this.y=-50;
-this.length=Math.random()*80+60;
-this.speed=Math.random()*10+8;
-this.opacity=Math.random()*0.5+0.5;
-this.angle=Math.PI/4; // 45度角
+// 随机选择流星起始位置：顶部或左侧
+const startFromTop = Math.random() > 0.5;
+    
+if(startFromTop){
+// 从顶部开始
+this.x = Math.random() * canvas.width;
+this.y = -50;
+} else {
+// 从左侧开始
+this.x = -50;
+this.y = Math.random() * canvas.height * 0.6; // 只在上半部分
+}
+
+this.length = Math.random() * 80 + 60;
+this.speed = Math.random() * 8 + 6;
+this.opacity = Math.random() * 0.4 + 0.3; // 降低透明度
+this.angle = Math.PI / 4; // 45度角
 }
 
 update(){
-this.x+=Math.cos(this.angle)*this.speed;
-this.y+=Math.sin(this.angle)*this.speed;
+this.x += Math.cos(this.angle) * this.speed;
+this.y += Math.sin(this.angle) * this.speed;
 
 // 如果流星飞出屏幕,重置位置
-if(this.y>canvas.height+50 || this.x>canvas.width+50){
+if(this.y > canvas.height + 50 || this.x > canvas.width + 50){
 this.reset();
 }
 }
 
 draw(){
 ctx.save();
-ctx.globalAlpha=this.opacity;
+ctx.globalAlpha = this.opacity;
 
 // 创建流星渐变
-const gradient=ctx.createLinearGradient(
+const gradient = ctx.createLinearGradient(
 this.x,
 this.y,
-this.x-Math.cos(this.angle)*this.length,
-this.y-Math.sin(this.angle)*this.length
+this.x - Math.cos(this.angle) * this.length,
+this.y - Math.sin(this.angle) * this.length
 );
 
-gradient.addColorStop(0,'rgba(0,255,159,1)');
-gradient.addColorStop(0.5,'rgba(0,212,255,0.5)');
-gradient.addColorStop(1,'rgba(255,255,255,0)');
+gradient.addColorStop(0, 'rgba(0,255,159,1)');
+gradient.addColorStop(0.5, 'rgba(0,212,255,0.5)');
+gradient.addColorStop(1, 'rgba(255,255,255,0)');
 
-ctx.strokeStyle=gradient;
-ctx.lineWidth=2;
-ctx.lineCap='round';
+ctx.strokeStyle = gradient;
+ctx.lineWidth = 2;
+ctx.lineCap = 'round';
 
 ctx.beginPath();
-ctx.moveTo(this.x,this.y);
+ctx.moveTo(this.x, this.y);
 ctx.lineTo(
-this.x-Math.cos(this.angle)*this.length,
-this.y-Math.sin(this.angle)*this.length
+this.x - Math.cos(this.angle) * this.length,
+this.y - Math.sin(this.angle) * this.length
 );
 ctx.stroke();
 
@@ -652,32 +545,32 @@ ctx.restore();
 }
 }
 
-// 创建初始流星
-for(let i=0;i<8;i++){
+// 创建初始流星（减少数量）
+for(let i = 0; i < 4; i++){
 meteors.push(new Meteor());
 }
 
-// 随机时间间隔添加新流星
+// 降低生成频率，减少密集度
 setInterval(()=>{
-if(meteors.length<15 && Math.random()>0.7){
+if(meteors.length < 8 && Math.random() > 0.8){
 meteors.push(new Meteor());
 }
-},2000);
+}, 3000); // 3秒检查一次
 
 // 主绘制循环
 function draw(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 // 绘制星星
 stars.forEach(s=>{
-ctx.globalAlpha=s.opacity;
+ctx.globalAlpha = s.opacity;
 ctx.beginPath();
-ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
-ctx.fillStyle="white";
+ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+ctx.fillStyle = "white";
 ctx.fill();
 });
 
-ctx.globalAlpha=1;
+ctx.globalAlpha = 1;
 
 // 更新和绘制流星
 meteors.forEach(m=>{
