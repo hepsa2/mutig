@@ -5,11 +5,16 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>二次元盒子导航</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+
 <style>
+
 :root {
   --primary: #00ff9f;
   --secondary: #00d4ff;
@@ -18,556 +23,379 @@
   --dark-alpha: rgba(10, 10, 15, 0.95);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
 }
 
-body {
-  margin: 0;
-  background: var(--dark);
-  color: #fff;
-  font-family: 'Noto Sans SC', sans-serif;
-  overflow-x: hidden;
-  position: relative;
-  min-height: 100vh;
+body{
+background:var(--dark);
+color:#fff;
+font-family:'Noto Sans SC',sans-serif;
+overflow-x:hidden;
+min-height:100vh;
 }
 
-/* Canvas 星空背景 */
-#meteorCanvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
+/* Canvas 星空 */
+#meteorCanvas{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:1;
+pointer-events:none;
 }
 
-/* 汉堡菜单按钮 */
-.menu-btn {
-  position: fixed;
-  top: 30px;
-  right: 30px;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* 汉堡按钮 */
+
+.menu-btn{
+position:fixed;
+top:30px;
+right:30px;
+width:50px;
+height:50px;
+cursor:pointer;
+z-index:1000;
+background:rgba(255,255,255,0.05);
+border:1px solid rgba(255,255,255,0.1);
+border-radius:12px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+gap:6px;
 }
 
-.menu-btn:hover {
-  background: rgba(0, 255, 159, 0.1);
-  border-color: var(--primary);
-  transform: scale(1.05);
-}
-
-.menu-btn span {
-  display: block;
-  width: 24px;
-  height: 2px;
-  background: var(--primary);
-  border-radius: 2px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 10px rgba(0, 255, 159, 0.5);
-}
-
-/* X 形态 */
-.menu-btn.active span:nth-child(1) {
-  transform: translateY(8px) rotate(45deg);
-}
-
-.menu-btn.active span:nth-child(2) {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-.menu-btn.active span:nth-child(3) {
-  transform: translateY(-8px) rotate(-45deg);
+.menu-btn span{
+width:24px;
+height:2px;
+background:var(--primary);
 }
 
 /* 侧边栏 */
-.sidebar {
-  position: fixed;
-  top: 0;
-  right: -400px;
-  width: 400px;
-  height: 100vh;
-  background: var(--dark-alpha);
-  backdrop-filter: blur(20px);
-  border-left: 1px solid rgba(0, 255, 159, 0.2);
-  z-index: 999;
-  transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 120px 40px 40px;
-  box-shadow: -10px 0 50px rgba(0, 0, 0, 0.5);
+
+.sidebar{
+position:fixed;
+top:0;
+right:-400px;
+width:400px;
+height:100vh;
+background:var(--dark-alpha);
+padding:120px 40px;
+transition:0.4s;
+z-index:999;
 }
 
-.sidebar.active {
-  right: 0;
+.sidebar.active{
+right:0;
 }
 
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 998;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease;
+.sidebar-overlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+opacity:0;
+pointer-events:none;
+transition:0.4s;
+z-index:998;
 }
 
-.sidebar-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
+.sidebar-overlay.active{
+opacity:1;
+pointer-events:auto;
 }
 
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.sidebar-nav{
+display:flex;
+flex-direction:column;
+gap:20px;
 }
 
-.sidebar-nav a {
-  text-decoration: none;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 400;
-  padding: 18px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.02);
-  position: relative;
-  overflow: hidden;
-  letter-spacing: 0.5px;
+.sidebar-nav a,
+.dropdown-btn{
+
+color:#fff;
+text-decoration:none;
+font-size:20px;
+padding:18px 24px;
+border:1px solid rgba(255,255,255,0.1);
+border-radius:12px;
+background:rgba(255,255,255,0.02);
+cursor:pointer;
 }
 
-.sidebar-nav a::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 159, 0.2), transparent);
-  transition: left 0.5s ease;
+/* 下拉菜单 */
+
+.dropdown{
+display:flex;
+flex-direction:column;
 }
 
-.sidebar-nav a:hover::before {
-  left: 100%;
+.dropdown-content{
+max-height:0;
+overflow:hidden;
+display:flex;
+flex-direction:column;
+gap:10px;
+transition:0.3s;
+margin-left:15px;
 }
 
-.sidebar-nav a:hover {
-  border-color: var(--primary);
-  background: rgba(0, 255, 159, 0.05);
-  transform: translateX(-5px);
-  box-shadow: 0 5px 20px rgba(0, 255, 159, 0.3);
+.dropdown-content a{
+font-size:16px;
+padding:14px;
+}
+
+.dropdown.active .dropdown-content{
+max-height:200px;
 }
 
 /* 主容器 */
-.container {
-  max-width: 1200px;
-  margin: auto;
-  padding: 40px 24px;
-  position: relative;
-  z-index: 2;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:40px 24px;
+position:relative;
+z-index:2;
+display:flex;
+flex-direction:column;
+align-items:center;
 }
 
-/* 主标题动画 */
-.hero-title {
-  font-family: 'Orbitron', monospace;
-  font-size: clamp(32px, 8vw, 100px);
-  font-weight: 900;
-  color: #fff;
-  text-align: center;
-  margin-bottom: 60px;
-  position: relative;
-  letter-spacing: clamp(2px, 1vw, 8px);
-  text-transform: uppercase;
-  animation: titleReveal 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  opacity: 0;
+/* 标题 */
+
+.hero-title{
+font-family:'Orbitron',monospace;
+font-size:clamp(32px,8vw,100px);
+margin-bottom:60px;
+text-align:center;
 }
 
-@keyframes titleReveal {
-  0% {
-    opacity: 0;
-    transform: scale(0.8) translateY(50px);
-    filter: blur(20px);
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0);
-  }
+/* 图片 */
+
+.image-box{
+max-width:800px;
+width:100%;
+aspect-ratio:4/3;
+overflow:hidden;
+border-radius:20px;
+margin-bottom:40px;
+border:2px solid rgba(0,255,159,0.3);
 }
 
-.hero-title::before {
-  content: attr(data-text);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: glowPulse 3s ease-in-out infinite;
-  z-index: -1;
-  filter: blur(15px);
+.image-box img{
+width:100%;
+height:100%;
+object-fit:cover;
 }
 
-@keyframes glowPulse {
-  0%, 100% {
-    opacity: 0.6;
-    filter: blur(15px);
-  }
-  50% {
-    opacity: 1;
-    filter: blur(20px);
-  }
+/* ====== 新增：小说段落 ====== */
+
+.story{
+max-width:800px;
+font-size:17px;
+line-height:1.9;
+margin:40px auto;
+text-align:left;
 }
 
-.hero-title span {
-  display: inline-block;
-  animation: letterFloat 3s ease-in-out infinite;
+.story-line{
+opacity:0;
+transform:translateY(40px);
+transition:all 1s ease;
 }
 
-.hero-title span:nth-child(1) { animation-delay: 0s; }
-.hero-title span:nth-child(2) { animation-delay: 0.1s; }
-.hero-title span:nth-child(3) { animation-delay: 0.2s; }
-.hero-title span:nth-child(4) { animation-delay: 0.3s; }
-.hero-title span:nth-child(5) { animation-delay: 0.4s; }
-.hero-title span:nth-child(6) { animation-delay: 0.5s; }
-.hero-title span:nth-child(7) { animation-delay: 0.6s; }
-.hero-title span:nth-child(8) { animation-delay: 0.7s; }
-.hero-title span:nth-child(9) { animation-delay: 0.8s; }
-
-@keyframes letterFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+.story-line.show{
+opacity:1;
+transform:translateY(0);
 }
 
-/* 图片容器 */
-.image-box {
-  width: 100%;
-  max-width: 800px;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  border-radius: 20px;
-  margin-bottom: 40px;
-  position: relative;
-  border: 2px solid rgba(0, 255, 159, 0.3);
-  box-shadow: 0 10px 50px rgba(0, 255, 159, 0.2);
-  animation: fadeInUp 1.5s ease 0.5s backwards;
+/* 副标题 */
+
+.subtitle{
+font-size:18px;
+color:rgba(255,255,255,0.6);
+margin-top:20px;
+letter-spacing:4px;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.image-box::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
-  border-radius: 20px;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.image-box:hover::before {
-  opacity: 0.6;
-  animation: borderRotate 3s linear infinite;
-}
-
-@keyframes borderRotate {
-  0% {
-    filter: hue-rotate(0deg);
-  }
-  100% {
-    filter: hue-rotate(360deg);
-  }
-}
-
-.image-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.image-box:hover img {
-  transform: scale(1.05);
-}
-
-/* 装饰性文字 */
-.subtitle {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.6);
-  text-align: center;
-  margin-top: 20px;
-  letter-spacing: 4px;
-  font-weight: 300;
-  animation: fadeIn 2s ease 1s backwards;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    right: -100%;
-  }
-  
-  .hero-title {
-    font-size: 32px;
-    letter-spacing: 2px;
-    margin-bottom: 40px;
-  }
-  
-  .menu-btn {
-    top: 20px;
-    right: 20px;
-  }
-  
-  .image-box {
-    border-radius: 15px;
-  }
-}
-
-/* 滚动条样式 */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary);
-}
 </style>
 </head>
+
 <body>
 
-<!-- 星空背景 Canvas -->
 <canvas id="meteorCanvas"></canvas>
 
-<!-- 汉堡菜单按钮 -->
 <div class="menu-btn" id="menuBtn">
-  <span></span>
-  <span></span>
-  <span></span>
+<span></span>
+<span></span>
+<span></span>
 </div>
 
-<!-- 侧边栏遮罩 -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- 侧边栏 -->
 <div class="sidebar" id="sidebar">
-  <nav class="sidebar-nav">
-    <a href="jieshao">次元哦喵</a>
-    <a href="network.html">安全知识</a>
-    <a href="foto.html">抽美图哦</a>
-    <a href="download.html">文件下载</a>
-    <a href="wenw/wx.html">文艺展示</a>
-  </nav>
+
+<nav class="sidebar-nav">
+
+<a href="jieshao">次元哦喵</a>
+
+<div class="dropdown" id="safeMenu">
+
+<div class="dropdown-btn">安全知识</div>
+
+<div class="dropdown-content">
+
+<a href="network.html">基础网安知识</a>
+
+<a href="net.html">进阶网安知识</a>
+
 </div>
 
-<!-- 主容器 -->
+</div>
+
+<a href="foto.html">抽美图哦</a>
+
+<a href="download.html">文件下载</a>
+
+<a href="wenw/wx.html">文艺展示</a>
+
+</nav>
+</div>
+
 <div class="container">
-  <h1 class="hero-title" data-text="ROFG2.ORG">
-    <span>R</span><span>O</span><span>F</span><span>G</span><span>2</span><span>.</span><span>O</span><span>R</span><span>G</span>
-  </h1>
-  
-  <div class="image-box">
-    <img src="aaa.png" alt="二次元图片">
-  </div>
-  
-  <p class="subtitle">二次元亚文化导航</p>
+
+<h1 class="hero-title">ROFG2.ORG</h1>
+
+<div class="image-box">
+<img src="aaa.png">
+</div>
+
+<!-- 新增段落 -->
+
+<div class="story">
+
+<div class="story-line">那条路。那张脸。</div>
+
+<div class="story-line">......“我只画过这张画”</div>
+
+<div class="story-line">一阵沉默。</div>
+
+<div class="story-line">“你知道我画的是什么吗？”</div>
+
+<div class="story-line">一位少年对站在房间门旁呆滞的另一位黑暗中的人影说。</div>
+
+<div class="story-line">窗外一片光亮，清风并未拂起厚重的窗帘。</div>
+
+<div class="story-line">“我自己。”</div>
+
+<div class="story-line">少年用平静的眼神看着黑影，棕黑的眼眸深处，是......</div>
+
+<div class="story-line">他缓缓迈步走向高纬的写字桌，虽然走动，但如僵化了一般......</div>
+
+<div class="story-line">桌子上摆着那张画，画面里......</div>
+
+<div class="story-line">十分令人不安的黑色线条，循环的深黑色门，无法洞见的深渊</div>
+
+<div class="story-line">他的倒影，他们的倒影，我们所有人也在其中......</div>
+
+<div class="story-line">少年缓缓抬起头</div>
+
+<div class="story-line">还是用平静、奇怪，仔细端详令人毛骨悚然的眼睛看着黑影。</div>
+
+<div class="story-line">“这是我到现在为止，画的唯一一副画。”</div>
+
+<div class="story-line">......“拿走吧”</div>
+
+</div>
+
+<p class="subtitle">二次元亚文化导航</p>
+
 </div>
 
 <script>
-// ========== 菜单切换 ==========
-const menuBtn = document.getElementById('menuBtn');
-const sidebar = document.getElementById('sidebar');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-function toggleMenu() {
-  menuBtn.classList.toggle('active');
-  sidebar.classList.toggle('active');
-  sidebarOverlay.classList.toggle('active');
+/* 菜单 */
+
+const menuBtn=document.getElementById('menuBtn');
+const sidebar=document.getElementById('sidebar');
+const overlay=document.getElementById('sidebarOverlay');
+
+menuBtn.onclick=()=>{
+menuBtn.classList.toggle('active');
+sidebar.classList.toggle('active');
+overlay.classList.toggle('active');
+};
+
+overlay.onclick=menuBtn.onclick;
+
+/* 下拉菜单 */
+
+document.querySelector(".dropdown-btn").onclick=function(){
+document.getElementById("safeMenu").classList.toggle("active");
+};
+
+/* 滚动文字动画 */
+
+const lines=document.querySelectorAll(".story-line");
+
+const observer=new IntersectionObserver(entries=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+entry.target.classList.add("show");
+}
+});
+},{threshold:0.3});
+
+lines.forEach(line=>observer.observe(line));
+
+/* 流星雨 */
+
+const canvas=document.getElementById("meteorCanvas");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
 }
 
-menuBtn.addEventListener('click', toggleMenu);
-sidebarOverlay.addEventListener('click', toggleMenu);
+resize();
 
-// ESC 键关闭菜单
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && sidebar.classList.contains('active')) {
-    toggleMenu();
-  }
+window.onresize=resize;
+
+const stars=[];
+
+for(let i=0;i<150;i++){
+stars.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+size:Math.random()*2
+});
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+stars.forEach(s=>{
+ctx.beginPath();
+ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
+ctx.fillStyle="white";
+ctx.fill();
 });
 
-// ========== 流星雨动画 ==========
-document.addEventListener("DOMContentLoaded", function () {
-  const canvas = document.getElementById("meteorCanvas");
-  const ctx = canvas.getContext("2d");
-  
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-  
-  const stars = [];
-  const meteors = [];
-  
-  // 生成背景星星
-  for (let i = 0; i < 150; i++) {
-    stars.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * 2,
-      opacity: Math.random() * 0.8 + 0.2,
-      twinkleSpeed: Math.random() * 0.02 + 0.01
-    });
-  }
-  
-  function createMeteor() {
-    return {
-      x: Math.random() * canvas.width + 200,
-      y: Math.random() * canvas.height / 2,
-      length: Math.random() * 120 + 80,
-      speed: Math.random() * 10 + 6,
-      opacity: 1,
-      color: Math.random() > 0.5 ? 'rgba(0, 255, 159,' : 'rgba(0, 212, 255,'
-    };
-  }
-  
-  function drawStars() {
-    stars.forEach(s => {
-      // 闪烁效果
-      s.opacity += s.twinkleSpeed;
-      if (s.opacity > 1 || s.opacity < 0.2) {
-        s.twinkleSpeed = -s.twinkleSpeed;
-      }
-      
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
-      ctx.fill();
-      
-      // 添加星光效果
-      if (Math.random() > 0.98) {
-        ctx.shadowBlur = 5;
-        ctx.shadowColor = 'rgba(0, 255, 159, 0.8)';
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
-    });
-  }
-  
-  function drawMeteor(m) {
-    const gradient = ctx.createLinearGradient(
-      m.x, m.y,
-      m.x - m.length, m.y + m.length
-    );
-    gradient.addColorStop(0, m.color + m.opacity + ')');
-    gradient.addColorStop(1, m.color + '0)');
-    
-    ctx.beginPath();
-    ctx.moveTo(m.x, m.y);
-    ctx.lineTo(m.x - m.length, m.y + m.length);
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = 2.5;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = m.color + '0.8)';
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-  }
-  
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    drawStars();
-    
-    // 随机生成流星
-    if (Math.random() < 0.03) {
-      meteors.push(createMeteor());
-    }
-    
-    // 更新和绘制流星
-    meteors.forEach((m, index) => {
-      m.x -= m.speed;
-      m.y += m.speed;
-      m.opacity -= 0.015;
-      
-      if (m.opacity <= 0) {
-        meteors.splice(index, 1);
-      } else {
-        drawMeteor(m);
-      }
-    });
-    
-    requestAnimationFrame(animate);
-  }
-  
-  animate();
-});
+requestAnimationFrame(draw);
+
+}
+
+draw();
+
 </script>
 
 </body>
