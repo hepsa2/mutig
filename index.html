@@ -48,6 +48,62 @@ z-index:1;
 pointer-events:none;
 }
 
+/* 音乐控制按钮 */
+.music-control{
+position:fixed;
+bottom:30px;
+right:30px;
+width:60px;
+height:60px;
+background:rgba(0,255,159,0.1);
+border:2px solid var(--primary);
+border-radius:50%;
+cursor:pointer;
+z-index:1000;
+display:flex;
+align-items:center;
+justify-content:center;
+transition:all 0.3s ease;
+backdrop-filter:blur(10px);
+animation:musicPulse 2s ease-in-out infinite;
+}
+
+.music-control:hover{
+background:rgba(0,255,159,0.2);
+transform:scale(1.1);
+box-shadow:0 0 20px rgba(0,255,159,0.5);
+}
+
+.music-icon{
+width:24px;
+height:24px;
+color:var(--primary);
+transition:all 0.3s ease;
+}
+
+@keyframes musicPulse{
+0%, 100%{
+box-shadow:0 0 10px rgba(0,255,159,0.3);
+}
+50%{
+box-shadow:0 0 25px rgba(0,255,159,0.6);
+}
+}
+
+/* 音乐控制按钮响应式 */
+@media (max-width: 768px){
+.music-control{
+bottom:20px;
+right:20px;
+width:50px;
+height:50px;
+}
+.music-icon{
+width:20px;
+height:20px;
+}
+}
+
 /* 汉堡按钮 */
 
 .menu-btn{
@@ -66,12 +122,38 @@ flex-direction:column;
 justify-content:center;
 align-items:center;
 gap:6px;
+transition: all 0.3s ease;
+}
+
+.menu-btn:hover{
+background:rgba(255,255,255,0.08);
 }
 
 .menu-btn span{
 width:24px;
 height:2px;
 background:var(--primary);
+transition: all 0.3s ease;
+transform-origin: center;
+will-change: transform, opacity;
+}
+
+/* 汉堡菜单变X形态 */
+.menu-btn.active{
+gap:0;
+}
+
+.menu-btn.active span:nth-child(1){
+transform: translateY(1px) rotate(45deg) translateZ(0);
+}
+
+.menu-btn.active span:nth-child(2){
+opacity: 0;
+transform: scaleX(0) translateZ(0);
+}
+
+.menu-btn.active span:nth-child(3){
+transform: translateY(-1px) rotate(-45deg) translateZ(0);
 }
 
 /* 侧边栏 */
@@ -79,17 +161,21 @@ background:var(--primary);
 .sidebar{
 position:fixed;
 top:0;
-right:-400px;
+right:0;
 width:400px;
 height:100vh;
 background:var(--dark-alpha);
+backdrop-filter: blur(8px);
 padding:120px 40px;
-transition:0.4s;
 z-index:999;
+border-left: 1px solid rgba(0,255,159,0.2);
+transform: translateX(100%);
+transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+will-change: transform;
 }
 
 .sidebar.active{
-right:0;
+transform: translateX(0);
 }
 
 .sidebar-overlay{
@@ -101,8 +187,9 @@ height:100%;
 background:rgba(0,0,0,0.7);
 opacity:0;
 pointer-events:none;
-transition:0.4s;
+transition: opacity 0.35s ease;
 z-index:998;
+will-change: opacity;
 }
 
 .sidebar-overlay.active{
@@ -118,7 +205,6 @@ gap:20px;
 
 .sidebar-nav a,
 .dropdown-btn{
-
 color:#fff;
 text-decoration:none;
 font-size:20px;
@@ -127,6 +213,14 @@ border:1px solid rgba(255,255,255,0.1);
 border-radius:12px;
 background:rgba(255,255,255,0.02);
 cursor:pointer;
+transition: all 0.3s ease;
+}
+
+.sidebar-nav a:hover,
+.dropdown-btn:hover{
+background:rgba(0,255,159,0.1);
+border-color: rgba(0,255,159,0.3);
+transform: translateX(-5px);
 }
 
 /* 下拉菜单 */
@@ -153,6 +247,7 @@ padding:14px;
 
 .dropdown.active .dropdown-content{
 max-height:200px;
+margin-top: 10px;
 }
 
 /* 主容器 */
@@ -168,13 +263,35 @@ flex-direction:column;
 align-items:center;
 }
 
-/* 标题 */
+/* 标题加载动画 */
+
+@keyframes titleReveal {
+0% {
+opacity: 0;
+filter: blur(20px);
+letter-spacing: 30px;
+transform: translateY(-30px);
+}
+60% {
+filter: blur(5px);
+}
+100% {
+opacity: 1;
+filter: blur(0);
+letter-spacing: 8px;
+transform: translateY(0);
+}
+}
 
 .hero-title{
 font-family:'Orbitron',monospace;
 font-size:clamp(32px,8vw,100px);
 margin-bottom:60px;
 text-align:center;
+letter-spacing: 8px;
+animation: titleReveal 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+text-shadow: 0 0 30px rgba(0,255,159,0.5),
+             0 0 60px rgba(0,212,255,0.3);
 }
 
 /* 图片 */
@@ -187,15 +304,28 @@ overflow:hidden;
 border-radius:20px;
 margin-bottom:40px;
 border:2px solid rgba(0,255,159,0.3);
+box-shadow: 0 20px 60px rgba(0,255,159,0.2);
+transition: all 0.4s ease;
+}
+
+.image-box:hover{
+transform: translateY(-5px);
+box-shadow: 0 30px 80px rgba(0,255,159,0.3);
+border-color: rgba(0,255,159,0.5);
 }
 
 .image-box img{
 width:100%;
 height:100%;
 object-fit:cover;
+transition: transform 0.4s ease;
 }
 
-/* ====== 新增：小说段落 ====== */
+.image-box:hover img{
+transform: scale(1.05);
+}
+
+/* 小说段落 */
 
 .story{
 max-width:800px;
@@ -225,10 +355,40 @@ margin-top:20px;
 letter-spacing:4px;
 }
 
+/* 响应式 */
+
+@media (max-width: 768px) {
+.sidebar{
+width: 100%;
+}
+
+.menu-btn{
+top: 20px;
+right: 20px;
+}
+}
+
 </style>
 </head>
 
 <body>
+
+<!-- 背景音乐 -->
+<audio id="bgMusic" loop>
+<source src="a1.mp3" type="audio/mpeg">
+您的浏览器不支持音频播放
+</audio>
+
+<!-- 音乐控制按钮 -->
+<div class="music-control" id="musicControl">
+<svg class="music-icon play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<polygon points="5 3 19 12 5 21 5 3"></polygon>
+</svg>
+<svg class="music-icon pause-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+<rect x="6" y="4" width="4" height="16"></rect>
+<rect x="14" y="4" width="4" height="16"></rect>
+</svg>
+</div>
 
 <canvas id="meteorCanvas"></canvas>
 
@@ -274,44 +434,44 @@ letter-spacing:4px;
 <h1 class="hero-title">ROFG2.ORG</h1>
 
 <div class="image-box">
-<img src="aaa.png">
+<img src="aaa.png" alt="二次元图片">
 </div>
 
-<!-- 新增段落 -->
+<!-- 段落 -->
 
 <div class="story">
 
 <div class="story-line">那条路。那张脸。</div>
 
-<div class="story-line">......“我只画过这张画”</div>
+<div class="story-line">......"我只画过这张画"</div>
 
 <div class="story-line">一阵沉默。</div>
 
-<div class="story-line">“你知道我画的是什么吗？”</div>
+<div class="story-line">"你知道我画的是什么吗?"</div>
 
 <div class="story-line">一位少年对站在房间门旁呆滞的另一位黑暗中的人影说。</div>
 
-<div class="story-line">窗外一片光亮，清风并未拂起厚重的窗帘。</div>
+<div class="story-line">窗外一片光亮,清风并未拂起厚重的窗帘。</div>
 
-<div class="story-line">“我自己。”</div>
+<div class="story-line">"我自己。"</div>
 
-<div class="story-line">少年用平静的眼神看着黑影，棕黑的眼眸深处，是......</div>
+<div class="story-line">少年用平静的眼神看着黑影,棕黑的眼眸深处,是......</div>
 
-<div class="story-line">他缓缓迈步走向高纬的写字桌，虽然走动，但如僵化了一般......</div>
+<div class="story-line">他缓缓迈步走向高纬的写字桌,虽然走动,但如僵化了一般......</div>
 
-<div class="story-line">桌子上摆着那张画，画面里......</div>
+<div class="story-line">桌子上摆着那张画,画面里......</div>
 
-<div class="story-line">十分令人不安的黑色线条，循环的深黑色门，无法洞见的深渊</div>
+<div class="story-line">十分令人不安的黑色线条,循环的深黑色门,无法洞见的深渊</div>
 
-<div class="story-line">他的倒影，他们的倒影，我们所有人也在其中......</div>
+<div class="story-line">他的倒影,他们的倒影,我们所有人也在其中......</div>
 
 <div class="story-line">少年缓缓抬起头</div>
 
-<div class="story-line">还是用平静、奇怪，仔细端详令人毛骨悚然的眼睛看着黑影。</div>
+<div class="story-line">还是用平静、奇怪,仔细端详令人毛骨悚然的眼睛看着黑影。</div>
 
-<div class="story-line">“这是我到现在为止，画的唯一一副画。”</div>
+<div class="story-line">"这是我到现在为止,画的唯一一副画。"</div>
 
-<div class="story-line">......“拿走吧”</div>
+<div class="story-line">......"拿走吧"</div>
 
 </div>
 
@@ -321,7 +481,56 @@ letter-spacing:4px;
 
 <script>
 
-/* 菜单 */
+/* ====== 音乐播放控制 ====== */
+
+const bgMusic = document.getElementById('bgMusic');
+const musicControl = document.getElementById('musicControl');
+const playIcon = document.querySelector('.play-icon');
+const pauseIcon = document.querySelector('.pause-icon');
+
+let isPlaying = false;
+
+// 尝试自动播放（现代浏览器可能会阻止）
+window.addEventListener('load', () => {
+bgMusic.play().then(() => {
+isPlaying = true;
+playIcon.style.display = 'none';
+pauseIcon.style.display = 'block';
+}).catch(() => {
+// 自动播放被阻止，显示播放按钮提示用户
+console.log('自动播放被阻止，请点击按钮播放音乐');
+});
+});
+
+// 音乐控制按钮点击事件
+musicControl.onclick = () => {
+if (isPlaying) {
+bgMusic.pause();
+playIcon.style.display = 'block';
+pauseIcon.style.display = 'none';
+isPlaying = false;
+} else {
+bgMusic.play();
+playIcon.style.display = 'none';
+pauseIcon.style.display = 'block';
+isPlaying = true;
+}
+};
+
+// 监听音乐状态变化
+bgMusic.addEventListener('pause', () => {
+isPlaying = false;
+playIcon.style.display = 'block';
+pauseIcon.style.display = 'none';
+});
+
+bgMusic.addEventListener('play', () => {
+isPlaying = true;
+playIcon.style.display = 'none';
+pauseIcon.style.display = 'block';
+});
+
+/* ====== 菜单交互 ====== */
 
 const menuBtn=document.getElementById('menuBtn');
 const sidebar=document.getElementById('sidebar');
@@ -333,11 +542,16 @@ sidebar.classList.toggle('active');
 overlay.classList.toggle('active');
 };
 
-overlay.onclick=menuBtn.onclick;
+overlay.onclick=()=>{
+menuBtn.classList.remove('active');
+sidebar.classList.remove('active');
+overlay.classList.remove('active');
+};
 
 /* 下拉菜单 */
 
-document.querySelector(".dropdown-btn").onclick=function(){
+document.querySelector(".dropdown-btn").onclick=function(e){
+e.stopPropagation();
 document.getElementById("safeMenu").classList.toggle("active");
 };
 
@@ -355,7 +569,7 @@ entry.target.classList.add("show");
 
 lines.forEach(line=>observer.observe(line));
 
-/* 流星雨 */
+/* 流星雨效果 */
 
 const canvas=document.getElementById("meteorCanvas");
 const ctx=canvas.getContext("2d");
@@ -366,32 +580,112 @@ canvas.height=window.innerHeight;
 }
 
 resize();
-
 window.onresize=resize;
 
+// 星星背景
 const stars=[];
-
 for(let i=0;i<150;i++){
 stars.push({
 x:Math.random()*canvas.width,
 y:Math.random()*canvas.height,
-size:Math.random()*2
+size:Math.random()*2,
+opacity:Math.random()*0.5+0.5
 });
 }
 
-function draw(){
+// 流星数组
+const meteors=[];
 
+class Meteor{
+constructor(){
+this.reset();
+}
+
+reset(){
+this.x=Math.random()*canvas.width;
+this.y=-50;
+this.length=Math.random()*80+60;
+this.speed=Math.random()*10+8;
+this.opacity=Math.random()*0.5+0.5;
+this.angle=Math.PI/4; // 45度角
+}
+
+update(){
+this.x+=Math.cos(this.angle)*this.speed;
+this.y+=Math.sin(this.angle)*this.speed;
+
+// 如果流星飞出屏幕,重置位置
+if(this.y>canvas.height+50 || this.x>canvas.width+50){
+this.reset();
+}
+}
+
+draw(){
+ctx.save();
+ctx.globalAlpha=this.opacity;
+
+// 创建流星渐变
+const gradient=ctx.createLinearGradient(
+this.x,
+this.y,
+this.x-Math.cos(this.angle)*this.length,
+this.y-Math.sin(this.angle)*this.length
+);
+
+gradient.addColorStop(0,'rgba(0,255,159,1)');
+gradient.addColorStop(0.5,'rgba(0,212,255,0.5)');
+gradient.addColorStop(1,'rgba(255,255,255,0)');
+
+ctx.strokeStyle=gradient;
+ctx.lineWidth=2;
+ctx.lineCap='round';
+
+ctx.beginPath();
+ctx.moveTo(this.x,this.y);
+ctx.lineTo(
+this.x-Math.cos(this.angle)*this.length,
+this.y-Math.sin(this.angle)*this.length
+);
+ctx.stroke();
+
+ctx.restore();
+}
+}
+
+// 创建初始流星
+for(let i=0;i<8;i++){
+meteors.push(new Meteor());
+}
+
+// 随机时间间隔添加新流星
+setInterval(()=>{
+if(meteors.length<15 && Math.random()>0.7){
+meteors.push(new Meteor());
+}
+},2000);
+
+// 主绘制循环
+function draw(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
+// 绘制星星
 stars.forEach(s=>{
+ctx.globalAlpha=s.opacity;
 ctx.beginPath();
 ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
 ctx.fillStyle="white";
 ctx.fill();
 });
 
-requestAnimationFrame(draw);
+ctx.globalAlpha=1;
 
+// 更新和绘制流星
+meteors.forEach(m=>{
+m.update();
+m.draw();
+});
+
+requestAnimationFrame(draw);
 }
 
 draw();
