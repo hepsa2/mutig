@@ -185,23 +185,39 @@ main.innerHTML=html;
 
 
 /* 加载文章 */
-
 function loadPost(id){
-
-fetch("posts/"+id+".md")
-.then(r=>r.text())
-.then(md=>{
-
-let html=marked.parse(md);
-
-html+=relatedPosts(id);
-
-main.innerHTML="<div id='content'>"+html+"</div>";
-
-});
-
+    fetch("posts/"+id+".md")
+        .then(r=>r.text())
+        .then(md=>{
+            let html = marked.parse(md);
+            html += relatedPosts(id);
+            // 在文章内容后添加评论容器
+            main.innerHTML = "<div id='content'>"+html+"</div><div id='comments'></div>";
+            
+            // 调用加载评论函数
+            loadComments();
+        });
 }
 
+function loadComments() {
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.setAttribute("data-repo", "hepsa2/mutig");
+    script.setAttribute("data-repo-id", "R_kgDORARutw");
+    script.setAttribute("data-category", "General");
+    script.setAttribute("data-category-id", "DIC_kwDORARut84C30Kj");
+    script.setAttribute("data-mapping", "pathname");
+    script.setAttribute("data-strict", "0");
+    script.setAttribute("data-reactions-enabled", "1");
+    script.setAttribute("data-emit-metadata", "0");
+    script.setAttribute("data-input-position", "bottom");
+    script.setAttribute("data-theme", "dark");
+    script.setAttribute("data-lang", "zh-CN");
+    script.crossOrigin = "anonymous";
+    script.async = true;
+
+    document.getElementById("comments").appendChild(script);
+}
 
 /* 往期文章 */
 
@@ -329,6 +345,7 @@ requestAnimationFrame(drawMeteor);
 drawMeteor();
 
 </script>
+
 
 
 </body>
