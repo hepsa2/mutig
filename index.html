@@ -333,7 +333,7 @@ right: 20px;
 <nav class="sidebar-nav">
 
 
-<div class="dropdown" id="safeMenu0">
+<div class="dropdown" id="safeMenu">
 
 <div class="dropdown-btn">次元哦喵</div>
 
@@ -451,10 +451,12 @@ overlay.classList.remove('active');
 
 /* ====== 下拉菜单 ====== */
 
-document.querySelector(".dropdown-btn").onclick=function(e){
+document.querySelectorAll(".dropdown-btn").forEach(btn=>{
+btn.addEventListener("click",function(e){
 e.stopPropagation();
-document.getElementById("safeMenu").classList.toggle("active");
-};
+this.parentElement.classList.toggle("active");
+});
+});
 
 /* ====== 滚动文字动画（仅在滚动到视口时触发）====== */
 
