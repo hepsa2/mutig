@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>博客</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:black;
+    color:white;
+    overflow-x:hidden;
+}
+
+/* 星空canvas */
+#stars{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-2;
+}
+
+/* 流星canvas */
+#meteors{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-1;
+}
+
+/* 页面主体 */
+.container{
+    max-width:800px;
+    margin:auto;
+    padding:40px;
+}
+
+/* 返回按钮 */
+.back{
+    margin-bottom:20px;
+}
+
+.back a{
+    color:#aaa;
+    text-decoration:none;
+    font-size:18px;
+}
+
+.back a:hover{
+    color:white;
+}
+
+/* 文章列表 */
+
+.post-list a{
+    display:block;
+    padding:10px 0;
+    color:#7fcfff;
+    text-decoration:none;
+}
+
+.post-list a:hover{
+    color:white;
+}
+
+/* Markdown内容 */
+
+#content{
+    line-height:1.7;
+}
+
+/* 往期文章 */
+
+.related{
+    margin-top:60px;
+    border-top:1px solid #333;
+    padding-top:20px;
+}
+
+.related a{
+    display:block;
+    color:#aaa;
+    padding:5px 0;
+    text-decoration:none;
+}
+
+.related a:hover{
+    color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="stars"></canvas>
+<canvas id="meteors"></canvas>
+
+<div class="container">
+
+<div class="back">
+<a href="index.html">← 返回主页</a>
+</div>
+
+<div id="main"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+
+/* 文章数据库 */
+
+const posts=[
+{ id:"post1", title:"第一篇文章"},
+{ id:"post2", title:"第二篇文章"},
+{ id:"post3", title:"第三篇文章"},
+{ id:"post4", title:"第四篇文章"}
+];
+
+
+/* 判断是否打开文章 */
+
+const params=new URLSearchParams(location.search);
+const post=params.get("post");
+
+const main=document.getElementById("main");
+
+if(post){
+
+loadPost(post);
+
+}else{
+
+showList();
+
+}
+
+
+/* 文章列表 */
+
+function showList(){
+
+let html="<h1>博客</h1><div class='post-list'>";
+
+posts.forEach(p=>{
+html+=`<a href="?post=${p.id}">${p.title}</a>`;
+});
+
+html+="</div>";
+
+main.innerHTML=html;
+
+}
+
+
+/* 加载文章 */
+
+function loadPost(id){
+
+fetch("posts/"+id+".md")
+.then(r=>r.text())
+.then(md=>{
+
+let html=marked.parse(md);
+
+html+=relatedPosts(id);
+
+main.innerHTML="<div id='content'>"+html+"</div>";
+
+});
+
+}
+
+
+/* 往期文章 */
+
+function relatedPosts(current){
+
+let index=posts.findIndex(p=>p.id===current);
+
+let html="<div class='related'><h3>往期文章</h3>";
+
+let count=0;
+
+for(let i=index-1;i>=0 && count<3;i--){
+
+html+=`<a href="?post=${posts[i].id}">${posts[i].title}</a>`;
+count++;
+
+}
+
+html+="</div>";
+
+return html;
+
+}
+
+</script>
+
+
+<script>
+
+/* 星空效果 */
+
+const starCanvas=document.getElementById("stars");
+const starCtx=starCanvas.getContext("2d");
+
+starCanvas.width=window.innerWidth;
+starCanvas.height=window.innerHeight;
+
+let stars=[];
+
+for(let i=0;i<200;i++){
+
+stars.push({
+x:Math.random()*starCanvas.width,
+y:Math.random()*starCanvas.height,
+r:Math.random()*1.5
+});
+
+}
+
+function drawStars(){
+
+starCtx.clearRect(0,0,starCanvas.width,starCanvas.height);
+
+starCtx.fillStyle="white";
+
+stars.forEach(s=>{
+starCtx.beginPath();
+starCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
+starCtx.fill();
+});
+
+requestAnimationFrame(drawStars);
+
+}
+
+drawStars();
+
+</script>
+
+
+<script>
+
+/* 流星雨 */
+
+const meteorCanvas=document.getElementById("meteors");
+const meteorCtx=meteorCanvas.getContext("2d");
+
+meteorCanvas.width=window.innerWidth;
+meteorCanvas.height=window.innerHeight;
+
+let meteors=[];
+
+function spawnMeteor(){
+
+meteors.push({
+x:Math.random()*meteorCanvas.width,
+y:0,
+len:Math.random()*80+10,
+speed:Math.random()*10+4
+});
+
+}
+
+setInterval(spawnMeteor,800);
+
+function drawMeteor(){
+
+meteorCtx.clearRect(0,0,meteorCanvas.width,meteorCanvas.height);
+
+meteorCtx.strokeStyle="white";
+meteorCtx.lineWidth=2;
+
+meteors.forEach((m,i)=>{
+
+meteorCtx.beginPath();
+meteorCtx.moveTo(m.x,m.y);
+meteorCtx.lineTo(m.x-m.len,m.y+m.len);
+meteorCtx.stroke();
+
+m.x-=m.speed;
+m.y+=m.speed;
+
+if(m.y>meteorCanvas.height){
+
+meteors.splice(i,1);
+
+}
+
+});
+
+requestAnimationFrame(drawMeteor);
+
+}
+
+drawMeteor();
+
+</script>
+
+
+</body>
+</html>
