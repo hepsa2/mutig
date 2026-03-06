@@ -2,6 +2,7 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>博客</title>
 
 <style>
@@ -38,7 +39,9 @@ body{
 .container{
     max-width:800px;
     margin:auto;
-    padding:40px;
+    padding:20px;
+    width:90%;
+    box-sizing:border-box;
 }
 
 /* 返回按钮 */
@@ -93,7 +96,22 @@ body{
 .related a:hover{
     color:white;
 }
+@media (max-width:600px){
 
+.container{
+padding:15px;
+width:95%;
+}
+
+#content{
+font-size:16px;
+}
+
+.post-list a{
+font-size:18px;
+}
+
+    }
 </style>
 
 </head>
