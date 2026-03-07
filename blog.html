@@ -1,129 +1,145 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>博客</title>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <style>
 
+:root{
+--red:#b30000;
+--lightred:#ffd6d6;
+}
+
 body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:black;
-    color:white;
-    overflow-x:hidden;
+margin:0;
+font-family:"Noto Sans SC",sans-serif;
+background:var(--lightred);
+color:#222;
+overflow-x:hidden;
 }
 
-/* 星空canvas */
-#stars{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    z-index:-2;
-}
+/* 红星背景 */
 
-/* 流星canvas */
-#meteors{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    z-index:-1;
+.star-bg{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+font-size:120vw;
+color:#ffd700;
+opacity:0.08;
+z-index:-1;
+pointer-events:none;
 }
 
 /* 页面主体 */
+
 .container{
-    max-width:800px;
-    margin:auto;
-    padding:20px;
-    width:90%;
-    box-sizing:border-box;
+max-width:900px;
+margin:auto;
+padding:20px;
 }
 
 /* 返回按钮 */
+
 .back{
-    margin-bottom:20px;
+margin-bottom:20px;
 }
 
 .back a{
-    color:#aaa;
-    text-decoration:none;
-    font-size:18px;
+color:#900;
+text-decoration:none;
+font-size:18px;
 }
 
 .back a:hover{
-    color:white;
+color:#b30000;
+}
+
+/* 栏目 */
+
+.category{
+
+background:white;
+border-left:6px solid var(--red);
+border-radius:8px;
+padding:18px;
+margin-bottom:18px;
+cursor:pointer;
+
+}
+
+.category h2{
+margin:0;
+color:#8b0000;
 }
 
 /* 文章列表 */
 
+.post-list{
+display:none;
+margin-top:12px;
+}
+
 .post-list a{
-    display:block;
-    padding:10px 0;
-    color:#7fcfff;
-    text-decoration:none;
+display:block;
+padding:8px 0;
+color:#333;
+text-decoration:none;
 }
 
 .post-list a:hover{
-    color:white;
+color:#b30000;
 }
 
-/* Markdown内容 */
+/* 文章内容 */
 
 #content{
-    line-height:1.7;
-}
 
-/* 往期文章 */
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 6px 18px rgba(0,0,0,0.15);
+line-height:1.8;
+
+}
 
 .related{
-    margin-top:60px;
-    border-top:1px solid #333;
-    padding-top:20px;
+margin-top:50px;
+border-top:2px solid #b30000;
+padding-top:20px;
 }
 
-.related a{
-    display:block;
-    color:#aaa;
-    padding:5px 0;
-    text-decoration:none;
-}
-
-.related a:hover{
-    color:white;
-}
 img{
 max-width:100%;
-height:auto;
 }
-@media (max-width:600px){
+
+@media(max-width:600px){
 
 .container{
 padding:15px;
-width:95%;
 }
 
 #content{
 font-size:16px;
 }
 
-.post-list a{
-font-size:18px;
 }
 
-    }
 </style>
 
 </head>
 
 <body>
 
-<canvas id="stars"></canvas>
-<canvas id="meteors"></canvas>
+<div class="star-bg">★</div>
 
 <div class="container">
 
@@ -135,218 +151,203 @@ font-size:18px;
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
 <script>
 
-/* 文章数据库 */
+/* GitHub仓库 */
 
-const posts=[
-{ id:"post1", title:"第一篇文章"},
-{ id:"post2", title:"第二篇文章"},
-{ id:"post3", title:"第三篇文章"},
-{ id:"post4", title:"第四篇文章"}
-];
+const repo="hepsa2/mlmpm";
 
+/* 栏目 */
 
-/* 判断是否打开文章 */
+const categories={
+
+A:{
+title:"时事评论",
+folder:"postsA"
+},
+
+B:{
+title:"理论分析",
+folder:"postsB"
+},
+
+C:{
+title:"国际视野",
+folder:"postsC"
+}
+
+};
 
 const params=new URLSearchParams(location.search);
+
+const cat=params.get("cat");
 const post=params.get("post");
 
 const main=document.getElementById("main");
 
-if(post){
+/* 打开文章 */
 
-loadPost(post);
+if(cat && post){
+
+loadPost(cat,post);
 
 }else{
 
-showList();
+showCategories();
 
 }
 
+/* 显示栏目 */
 
-/* 文章列表 */
+async function showCategories(){
 
-function showList(){
+let html="<h1>博客栏目</h1>";
 
-let html="<h1>博客</h1><div class='post-list'>";
+for(let key in categories){
 
-posts.forEach(p=>{
-html+=`<a href="?post=${p.id}">${p.title}</a>`;
-});
+let c=categories[key];
 
-html+="</div>";
+html+=`
+
+<div class="category" onclick="toggle('${key}')">
+
+<h2>${c.title}</h2>
+
+<div class="post-list" id="list-${key}">
+
+加载中...
+
+</div>
+
+</div>
+
+`;
+
+}
 
 main.innerHTML=html;
 
+/* 读取文章 */
+
+for(let key in categories){
+
+loadPosts(key);
+
 }
 
+}
+
+/* 读取 GitHub 文章列表 */
+
+async function loadPosts(key){
+
+let folder=categories[key].folder;
+
+let url=`https://api.github.com/repos/${repo}/contents/${folder}`;
+
+let res=await fetch(url);
+
+let data=await res.json();
+
+let list=document.getElementById("list-"+key);
+
+list.innerHTML="";
+
+for(let file of data){
+
+if(!file.name.endsWith(".md")) continue;
+
+let name=file.name.replace(".md","");
+
+/* 读取 markdown */
+
+let raw=`https://raw.githubusercontent.com/${repo}/main/${folder}/${file.name}`;
+
+let text=await fetch(raw).then(r=>r.text());
+
+let title=name;
+
+/* 提取标题 */
+
+let match=text.match(/^#\s+(.*)/);
+
+if(match){
+
+title=match[1];
+
+}
+
+/* 添加链接 */
+
+let a=document.createElement("a");
+
+a.href=`?cat=${key}&post=${name}`;
+
+a.innerText=title;
+
+list.appendChild(a);
+
+}
+
+}
+
+/* 展开栏目 */
+
+function toggle(id){
+
+let el=document.getElementById("list-"+id);
+
+el.style.display=el.style.display==="block"?"none":"block";
+
+}
 
 /* 加载文章 */
-function loadPost(id){
-    fetch("posts/"+id+".md")
-        .then(r=>r.text())
-        .then(md=>{
-            let html = marked.parse(md);
-            html += relatedPosts(id);
-            // 在文章内容后添加评论容器
-            main.innerHTML = "<div id='content'>"+html+"</div><div id='comments'></div>";
-            
-            // 调用加载评论函数
-            loadComments();
-        });
-}
 
-function loadComments() {
-    const script = document.createElement("script");
-    script.src = "https://giscus.app/client.js";
-    script.setAttribute("data-repo", "hepsa2/mutig");
-    script.setAttribute("data-repo-id", "R_kgDORARutw");
-    script.setAttribute("data-category", "General");
-    script.setAttribute("data-category-id", "DIC_kwDORARut84C30Kj");
-    script.setAttribute("data-mapping", "pathname");
-    script.setAttribute("data-strict", "0");
-    script.setAttribute("data-reactions-enabled", "1");
-    script.setAttribute("data-emit-metadata", "0");
-    script.setAttribute("data-input-position", "bottom");
-    script.setAttribute("data-theme", "dark");
-    script.setAttribute("data-lang", "zh-CN");
-    script.crossOrigin = "anonymous";
-    script.async = true;
+async function loadPost(cat,id){
 
-    document.getElementById("comments").appendChild(script);
-}
+let folder=categories[cat].folder;
 
-/* 往期文章 */
+let url=`https://raw.githubusercontent.com/${repo}/main/${folder}/${id}.md`;
 
-function relatedPosts(current){
+let res=await fetch(url);
 
-let index=posts.findIndex(p=>p.id===current);
+let md=await res.text();
 
-let html="<div class='related'><h3>往期文章</h3>";
+let html=marked.parse(md);
 
-let count=0;
+main.innerHTML=`<div id="content">${html}</div><div id="comments"></div>`;
 
-for(let i=index-1;i>=0 && count<3;i--){
-
-html+=`<a href="?post=${posts[i].id}">${posts[i].title}</a>`;
-count++;
+loadComments();
 
 }
 
-html+="</div>";
+/* 评论系统 */
 
-return html;
+function loadComments(){
+
+const script=document.createElement("script");
+
+script.src="https://giscus.app/client.js";
+
+script.setAttribute("data-repo","hepsa2/mlmpm");
+
+script.setAttribute("data-mapping","pathname");
+
+script.setAttribute("data-category","General");
+
+script.setAttribute("data-reactions-enabled","1");
+
+script.setAttribute("data-theme","light");
+
+script.setAttribute("data-lang","zh-CN");
+
+script.async=true;
+
+document.getElementById("comments").appendChild(script);
 
 }
 
 </script>
-
-
-<script>
-
-/* 星空效果 */
-
-const starCanvas=document.getElementById("stars");
-const starCtx=starCanvas.getContext("2d");
-
-starCanvas.width=window.innerWidth;
-starCanvas.height=window.innerHeight;
-
-let stars=[];
-
-for(let i=0;i<200;i++){
-
-stars.push({
-x:Math.random()*starCanvas.width,
-y:Math.random()*starCanvas.height,
-r:Math.random()*1.5
-});
-
-}
-
-function drawStars(){
-
-starCtx.clearRect(0,0,starCanvas.width,starCanvas.height);
-
-starCtx.fillStyle="white";
-
-stars.forEach(s=>{
-starCtx.beginPath();
-starCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
-starCtx.fill();
-});
-
-requestAnimationFrame(drawStars);
-
-}
-
-drawStars();
-
-</script>
-
-
-<script>
-
-/* 流星雨 */
-
-const meteorCanvas=document.getElementById("meteors");
-const meteorCtx=meteorCanvas.getContext("2d");
-
-meteorCanvas.width=window.innerWidth;
-meteorCanvas.height=window.innerHeight;
-
-let meteors=[];
-
-function spawnMeteor(){
-
-meteors.push({
-x:Math.random()*meteorCanvas.width,
-y:0,
-len:Math.random()*80+10,
-speed:Math.random()*10+4
-});
-
-}
-
-setInterval(spawnMeteor,800);
-
-function drawMeteor(){
-
-meteorCtx.clearRect(0,0,meteorCanvas.width,meteorCanvas.height);
-
-meteorCtx.strokeStyle="white";
-meteorCtx.lineWidth=2;
-
-meteors.forEach((m,i)=>{
-
-meteorCtx.beginPath();
-meteorCtx.moveTo(m.x,m.y);
-meteorCtx.lineTo(m.x-m.len,m.y+m.len);
-meteorCtx.stroke();
-
-m.x-=m.speed;
-m.y+=m.speed;
-
-if(m.y>meteorCanvas.height){
-
-meteors.splice(i,1);
-
-}
-
-});
-
-requestAnimationFrame(drawMeteor);
-
-}
-
-drawMeteor();
-
-</script>
-
-
 
 </body>
 </html>
