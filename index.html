@@ -1,611 +1,159 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>二次元盒子导航</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+<title>Gateway</title>
 
 <style>
 
-:root {
-  --primary: #00ff9f;
-  --secondary: #00d4ff;
-  --accent: #ff0080;
-  --dark: #0a0a0f;
-  --dark-alpha: rgba(10, 10, 15, 0.95);
-}
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
-
 body{
-background:var(--dark);
-color:#fff;
-font-family:'Noto Sans SC',sans-serif;
-overflow-x:hidden;
-min-height:100vh;
-}
-
-/* Canvas 星空 */
-#meteorCanvas{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-z-index:1;
-pointer-events:none;
-}
-
-/* 汉堡按钮 */
-
-.menu-btn{
-position:fixed;
-top:30px;
-right:30px;
-width:50px;
-height:50px;
-cursor:pointer;
-z-index:1000;
-background:rgba(255,255,255,0.05);
-border:1px solid rgba(255,255,255,0.1);
-border-radius:12px;
+background:#0f0f0f;
+color:#e8e8e8;
+font-family:Arial,Helvetica,sans-serif;
 display:flex;
-flex-direction:column;
+align-items:center;
 justify-content:center;
-align-items:center;
-gap:6px;
-transition: all 0.3s ease;
-}
-
-.menu-btn:hover{
-background:rgba(255,255,255,0.08);
-}
-
-.menu-btn span{
-width:24px;
-height:2px;
-background:var(--primary);
-transition: all 0.3s ease;
-transform-origin: center;
-will-change: transform, opacity;
-}
-
-/* 汉堡菜单变X形态 */
-.menu-btn.active{
-gap:0;
-}
-
-.menu-btn.active span:nth-child(1){
-transform: translateY(1px) rotate(45deg) translateZ(0);
-}
-
-.menu-btn.active span:nth-child(2){
-opacity: 0;
-transform: scaleX(0) translateZ(0);
-}
-
-.menu-btn.active span:nth-child(3){
-transform: translateY(-1px) rotate(-45deg) translateZ(0);
-}
-
-/* 侧边栏 */
-
-.sidebar{
-position:fixed;
-top:0;
-right:0;
-width:400px;
 height:100vh;
-background:var(--dark-alpha);
-backdrop-filter: blur(8px);
-padding:120px 40px;
-z-index:999;
-border-left: 1px solid rgba(0,255,159,0.2);
-transform: translateX(100%);
-transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-will-change: transform;
+margin:0;
 }
 
-.sidebar.active{
-transform: translateX(0);
-}
-
-.sidebar-overlay{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.7);
-opacity:0;
-pointer-events:none;
-transition: opacity 0.35s ease;
-z-index:998;
-will-change: opacity;
-}
-
-.sidebar-overlay.active{
-opacity:1;
-pointer-events:auto;
-}
-
-.sidebar-nav{
-display:flex;
-flex-direction:column;
-gap:20px;
-}
-
-.sidebar-nav a,
-.dropdown-btn{
-color:#fff;
-text-decoration:none;
-font-size:20px;
-padding:18px 24px;
-border:1px solid rgba(255,255,255,0.1);
+.box{
+background:#1b1b1b;
+padding:40px;
 border-radius:12px;
-background:rgba(255,255,255,0.02);
-cursor:pointer;
-transition: all 0.3s ease;
-}
-
-.sidebar-nav a:hover,
-.dropdown-btn:hover{
-background:rgba(0,255,159,0.1);
-border-color: rgba(0,255,159,0.3);
-transform: translateX(-5px);
-}
-
-/* 下拉菜单 */
-
-.dropdown{
-display:flex;
-flex-direction:column;
-}
-
-.dropdown-content{
-max-height:0;
-overflow:hidden;
-display:flex;
-flex-direction:column;
-gap:10px;
-transition:0.3s;
-margin-left:15px;
-}
-
-.dropdown-content a{
-font-size:16px;
-padding:14px;
-}
-
-.dropdown.active .dropdown-content{
-max-height:200px;
-margin-top: 10px;
-}
-
-/* 主容器 */
-
-.container{
-max-width:1200px;
-margin:auto;
-padding:40px 24px;
-position:relative;
-z-index:2;
-display:flex;
-flex-direction:column;
-align-items:center;
-}
-
-/* 标题加载动画 */
-
-@keyframes titleReveal {
-0% {
-opacity: 0;
-filter: blur(20px);
-letter-spacing: 30px;
-transform: translateY(-30px);
-}
-60% {
-filter: blur(5px);
-}
-100% {
-opacity: 1;
-filter: blur(0);
-letter-spacing: 8px;
-transform: translateY(0);
-}
-}
-
-.hero-title{
-font-family:'Orbitron',monospace;
-font-size:clamp(32px,8vw,100px);
-margin-bottom:60px;
+width:320px;
 text-align:center;
-letter-spacing: 8px;
-animation: titleReveal 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-text-shadow: 0 0 30px rgba(0,255,159,0.5),
-             0 0 60px rgba(0,212,255,0.3);
+box-shadow:0 0 20px rgba(0,0,0,0.6);
 }
 
-/* 图片 */
-
-.image-box{
-max-width:800px;
-width:100%;
-aspect-ratio:4/3;
-overflow:hidden;
-border-radius:20px;
-margin-bottom:40px;
-border:2px solid rgba(0,255,159,0.3);
-box-shadow: 0 20px 60px rgba(0,255,159,0.2);
-transition: all 0.4s ease;
+h1{
+margin-top:0;
 }
 
-.image-box:hover{
-transform: translateY(-5px);
-box-shadow: 0 30px 80px rgba(0,255,159,0.3);
-border-color: rgba(0,255,159,0.5);
-}
-
-.image-box img{
-width:100%;
-height:100%;
-object-fit:cover;
-transition: transform 0.4s ease;
-}
-
-.image-box:hover img{
-transform: scale(1.05);
-}
-
-/* 小说段落 */
-
-.story{
-max-width:800px;
-font-size:17px;
-line-height:1.9;
-margin:40px auto;
-text-align:left;
-min-height: 400px;
-}
-
-.story-line{
-opacity:0;
-transform:translateY(40px);
-transition:all 1s ease;
-}
-
-.story-line.show{
-opacity:1;
-transform:translateY(0);
-}
-
-/* 副标题 */
-
-.subtitle{
-font-size:18px;
-color:rgba(255,255,255,0.6);
+button{
 margin-top:20px;
-letter-spacing:4px;
+padding:10px 20px;
+border:none;
+background:#b30000;
+color:white;
+border-radius:6px;
+cursor:pointer;
+font-size:16px;
 }
 
-/* 响应式 */
-
-@media (max-width: 768px) {
-.sidebar{
-width: 100%;
+button:hover{
+background:#d10000;
 }
 
-.menu-btn{
-top: 20px;
-right: 20px;
+input{
+margin-top:10px;
+padding:10px;
+width:100%;
+border-radius:6px;
+border:none;
+outline:none;
 }
+
+#verify{
+display:none;
+}
+
+#result{
+margin-top:15px;
+color:#ffbaba;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<canvas id="meteorCanvas"></canvas>
+<div class="box">
 
-<div class="menu-btn" id="menuBtn">
-<span></span>
-<span></span>
-<span></span>
-</div>
+<div id="start">
 
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<h1>Access Gateway</h1>
 
-<div class="sidebar" id="sidebar">
+<p>苹果音乐下载站</p>
 
-<nav class="sidebar-nav">
-
-
-<div class="dropdown" id="safeMenu">
-
-<div class="dropdown-btn">次元哦喵</div>
-
-<div class="dropdown-content">
-
-<a href="jieshao.html">文化风光</a>
-
-<a href="blog.html">文化站台</a>
+<button onclick="startVerify()">开始验证</button>
 
 </div>
 
-</div>
+<div id="verify">
 
-  
-<div class="dropdown" id="safeMenu">
+<h2>访问验证</h2>
 
-<div class="dropdown-btn">安全知识</div>
+<p id="question"></p>
 
-<div class="dropdown-content">
+<input id="answer" placeholder="请输入答案">
 
-<a href="network.html">基础网安知识</a>
+<button onclick="submitAnswer()">提交</button>
 
-<a href="net.html">进阶网安知识</a>
-
-</div>
+<p id="result"></p>
 
 </div>
-
-<a href="foto.html">抽美图哦</a>
-
-<a href="download.html">文件下载</a>
-
-<a href="wenw/wx.html">文艺展示</a>
-
-</nav>
-</div>
-
-<div class="container">
-
-<h1 class="hero-title">ROFG2.ORG</h1>
-
-<div class="image-box">
-<img src="aaa.png" alt="二次元图片">
-</div>
-
-<!-- 段落 - 初始隐藏,滚动时显示 -->
-
-<div class="story">
-<div class="story-line">   </div>
-<div class="story-line">   </div>
-<div class="story-line">   </div>
-<div class="story-line">   </div>
-<div class="story-line">   </div>
-<div class="story-line">   </div>
-<div class="story-line">   </div>
-<div class="story-line">   </div>
-
-<div class="story-line">那条路。那张脸。</div>
-
-<div class="story-line">......"我只画过这张画"</div>
-
-<div class="story-line">一阵沉默。</div>
-
-<div class="story-line">"你知道我画的是什么吗?"</div>
-
-<div class="story-line">一位少年对站在房间门旁呆滞的另一位黑暗中的人影说。</div>
-
-<div class="story-line">窗外一片光亮,清风并未拂起厚重的窗帘。</div>
-
-<div class="story-line">"我自己。"</div>
-
-<div class="story-line">少年用平静的眼神看着黑影,棕黑的眼眸深处,是......</div>
-
-<div class="story-line">黑影缓缓迈步走向少年的写字桌,虽然走动,但如僵化了一般......</div>
-
-<div class="story-line">桌子上摆着那张画,画面里......</div>
-
-<div class="story-line">十分令人不安的黑色线条,循环的深黑色门,无法洞见的深渊</div>
-
-<div class="story-line">他的倒影,他们的倒影,我们所有人也在其中......</div>
-
-<div class="story-line">少年缓缓抬起头</div>
-
-<div class="story-line">还是用平静、奇怪,仔细端详令人毛骨悚然的眼睛看着黑影。</div>
-
-<div class="story-line">"这是我到现在为止,画的唯一一副画。"</div>
-
-<div class="story-line">......"拿走吧"</div>
-
-</div>
-
-<p class="subtitle">二次元亚文化导航</p>
 
 </div>
 
 <script>
 
-/* ====== 菜单交互 ====== */
+const questions = [
 
-const menuBtn=document.getElementById('menuBtn');
-const sidebar=document.getElementById('sidebar');
-const overlay=document.getElementById('sidebarOverlay');
+{q:"2+3",a:"6"},
+{q:"3 + 4 等于多少？",a:"12"},
+{q:"5 - 2 等于多少？",a:"10"},
+{q:"10 - 6 等于多少？",a:"60"}
 
-menuBtn.onclick=()=>{
-menuBtn.classList.toggle('active');
-sidebar.classList.toggle('active');
-overlay.classList.toggle('active');
-};
+];
 
-overlay.onclick=()=>{
-menuBtn.classList.remove('active');
-sidebar.classList.remove('active');
-overlay.classList.remove('active');
-};
+let current;
 
-/* ====== 下拉菜单 ====== */
+function startVerify(){
 
-document.querySelectorAll(".dropdown-btn").forEach(btn=>{
-btn.addEventListener("click",function(e){
-e.stopPropagation();
-this.parentElement.classList.toggle("active");
-});
-});
+document.getElementById("start").style.display="none";
+document.getElementById("verify").style.display="block";
 
-/* ====== 滚动文字动画（仅在滚动到视口时触发）====== */
+randomQuestion();
 
-const lines=document.querySelectorAll(".story-line");
-
-const observer=new IntersectionObserver(entries=>{
-entries.forEach((entry, index)=>{
-if(entry.isIntersecting){
-// 添加延迟效果，让文字逐行出现
-setTimeout(()=>{
-entry.target.classList.add("show");
-}, index * 100); // 每行延迟100ms
-}
-});
-},{threshold:0.3});
-
-lines.forEach(line=>observer.observe(line));
-
-/* ====== 优化的流星雨效果 ====== */
-
-const canvas=document.getElementById("meteorCanvas");
-const ctx=canvas.getContext("2d");
-
-function resize(){
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
 }
 
-resize();
-window.onresize=resize;
+function randomQuestion(){
 
-// 星星背景
-const stars=[];
-for(let i=0;i<150;i++){
-stars.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-size:Math.random()*2,
-opacity:Math.random()*0.5+0.5
-});
+current = questions[Math.floor(Math.random()*questions.length)];
+
+document.getElementById("question").innerText = current.q;
+
 }
 
-// 流星数组
-const meteors=[];
+function submitAnswer(){
 
-class Meteor{
-constructor(){
-this.reset();
+let ans = document.getElementById("answer").value.trim();
+
+if(ans === current.a){
+
+let token = Math.random().toString(36).substring(2,12);
+
+document.getElementById("result").style.color="#9cff9c";
+document.getElementById("result").innerText="验证成功，正在进入...";
+
+setTimeout(function(){
+
+location.href="https://redrev.pages.dev/?token="+token;
+
+},1000);
+
+}else{
+
+document.getElementById("result").innerText="答案错误，请重试";
+
 }
 
-reset(){
-// 随机选择流星起始位置：顶部或左侧
-const startFromTop = Math.random() > 0.5;
-    
-if(startFromTop){
-// 从顶部开始
-this.x = Math.random() * canvas.width;
-this.y = -50;
-} else {
-// 从左侧开始
-this.x = -50;
-this.y = Math.random() * canvas.height * 0.6; // 只在上半部分
 }
-
-this.length = Math.random() * 80 + 60;
-this.speed = Math.random() * 8 + 6;
-this.opacity = Math.random() * 0.4 + 0.3; // 降低透明度
-this.angle = Math.PI / 4; // 45度角
-}
-
-update(){
-this.x += Math.cos(this.angle) * this.speed;
-this.y += Math.sin(this.angle) * this.speed;
-
-// 如果流星飞出屏幕,重置位置
-if(this.y > canvas.height + 50 || this.x > canvas.width + 50){
-this.reset();
-}
-}
-
-draw(){
-ctx.save();
-ctx.globalAlpha = this.opacity;
-
-// 创建流星渐变
-const gradient = ctx.createLinearGradient(
-this.x,
-this.y,
-this.x - Math.cos(this.angle) * this.length,
-this.y - Math.sin(this.angle) * this.length
-);
-
-gradient.addColorStop(0, 'rgba(0,255,159,1)');
-gradient.addColorStop(0.5, 'rgba(0,212,255,0.5)');
-gradient.addColorStop(1, 'rgba(255,255,255,0)');
-
-ctx.strokeStyle = gradient;
-ctx.lineWidth = 2;
-ctx.lineCap = 'round';
-
-ctx.beginPath();
-ctx.moveTo(this.x, this.y);
-ctx.lineTo(
-this.x - Math.cos(this.angle) * this.length,
-this.y - Math.sin(this.angle) * this.length
-);
-ctx.stroke();
-
-ctx.restore();
-}
-}
-
-// 创建初始流星（减少数量）
-for(let i = 0; i < 4; i++){
-meteors.push(new Meteor());
-}
-
-// 降低生成频率，减少密集度
-setInterval(()=>{
-if(meteors.length < 8 && Math.random() > 0.8){
-meteors.push(new Meteor());
-}
-}, 3000); // 3秒检查一次
-
-// 主绘制循环
-function draw(){
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-// 绘制星星
-stars.forEach(s=>{
-ctx.globalAlpha = s.opacity;
-ctx.beginPath();
-ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-ctx.fillStyle = "white";
-ctx.fill();
-});
-
-ctx.globalAlpha = 1;
-
-// 更新和绘制流星
-meteors.forEach(m=>{
-m.update();
-m.draw();
-});
-
-requestAnimationFrame(draw);
-}
-
-draw();
 
 </script>
 
