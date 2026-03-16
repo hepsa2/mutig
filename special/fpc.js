@@ -51,7 +51,7 @@ export default {
       const { answer, questionIndex } = body;
 
       // 完整题库答案
-      const answers = ["140", "西", "6", "12", "10", "60"];
+      const answers = ["答案", "答案", "答案", "答案", "答案", "答案"];
 
       // 检查索引
       if (questionIndex < 0 || questionIndex >= answers.length) {
