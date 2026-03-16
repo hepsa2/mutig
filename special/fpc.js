@@ -20,12 +20,12 @@ export default {
     // -------------------
     if (url.pathname === "/get-question") {
       const questions = [
-        { q: "35*4？" },
-        { q: "anto（？）xiu（填汉字）" },
-        { q: "2+3" },
-        { q: "3 + 4 等于多少？" },
-        { q: "5 - 2 等于多少？" },
-        { q: "10 - 6 等于多少？" }
+        { q: "提问" },
+        { q: "提问" },
+        { q: "提问" },
+        { q: "提问" },
+        { q: "提问" },
+        { q: "提问" }
       ];
       const index = Math.floor(Math.random() * questions.length);
       return new Response(JSON.stringify({ question: questions[index].q, index }), {
@@ -88,7 +88,7 @@ export default {
       if (!valid) return new Response("Token 已过期或无效", { status: 403 });
 
       // Token 有效 → 跳转主站
-      return Response.redirect("https://redrev.pages.dev", 302);
+      return Response.redirect("https://主站.com", 302);
     }
 
     // -------------------
