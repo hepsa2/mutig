@@ -76,7 +76,7 @@ function startVerify() {
 // 获取题目
 async function fetchQuestion() {
   try {
-    const res = await fetch("https://sweet-salad-4a33.sadnohikori-952.workers.dev/get-question");
+    const res = await fetch("https://orange-hall-b7fa.sadnohikori-952.workers.dev/get-question");
     const data = await res.json();
     document.getElementById("question").innerText = data.question;
     currentQuestionIndex = data.index;
