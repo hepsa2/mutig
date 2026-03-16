@@ -90,7 +90,7 @@ async function fetchQuestion() {
 async function submitAnswer() {
   const ans = document.getElementById("answer").value.trim();
   try {
-    const res = await fetch("https://sweet-salad-4a33.sadnohikori-952.workers.dev/generate-token", {
+    const res = await fetch("https://orange-hall-b7fa.sadnohikori-952.workers.dev/generate-token", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({ answer: ans, questionIndex: currentQuestionIndex })
@@ -101,7 +101,7 @@ async function submitAnswer() {
       document.getElementById("result").style.color = "#9cff9c";
       document.getElementById("result").innerText = "验证成功，正在进入...";
       setTimeout(() => {
-        location.href = "https://sweet-salad-4a33.sadnohikori-952.workers.dev/protected?token=" + data.token;
+        location.href = "https://orange-hall-b7fa.sadnohikori-952.workers.dev/protected?token=" + data.token;
       }, 1000);
     } else {
       document.getElementById("result").innerText = data.error || "答案错误，请重试";
