@@ -1,160 +1,117 @@
 <!DOCTYPE html>
-
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Gateway</title>
-
 <style>
-
-body{
-background:#0f0f0f;
-color:#e8e8e8;
-font-family:Arial,Helvetica,sans-serif;
-display:flex;
-align-items:center;
-justify-content:center;
-height:100vh;
-margin:0;
+body {
+  background:#0f0f0f;
+  color:#e8e8e8;
+  font-family:Arial,Helvetica,sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  margin:0;
 }
-
-.box{
-background:#1b1b1b;
-padding:40px;
-border-radius:12px;
-width:320px;
-text-align:center;
-box-shadow:0 0 20px rgba(0,0,0,0.6);
+.box {
+  background:#1b1b1b;
+  padding:40px;
+  border-radius:12px;
+  width:320px;
+  text-align:center;
+  box-shadow:0 0 20px rgba(0,0,0,0.6);
 }
-
-h1{
-margin-top:0;
+h1 {margin-top:0;}
+button {
+  margin-top:20px;
+  padding:10px 20px;
+  border:none;
+  background:#b30000;
+  color:white;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:16px;
 }
-
-button{
-margin-top:20px;
-padding:10px 20px;
-border:none;
-background:#b30000;
-color:white;
-border-radius:6px;
-cursor:pointer;
-font-size:16px;
+button:hover {background:#d10000;}
+input {
+  margin-top:10px;
+  padding:10px;
+  width:100%;
+  border-radius:6px;
+  border:none;
+  outline:none;
 }
-
-button:hover{
-background:#d10000;
-}
-
-input{
-margin-top:10px;
-padding:10px;
-width:100%;
-border-radius:6px;
-border:none;
-outline:none;
-}
-
-#verify{
-display:none;
-}
-
-#result{
-margin-top:15px;
-color:#ffbaba;
-}
-
+#verify {display:none;}
+#result {margin-top:15px;color:#ffbaba;}
 </style>
-
 </head>
-
 <body>
-
 <div class="box">
-
-<div id="start">
-
-<h1>Access Gateway</h1>
-
-<p>🎵苹果音乐下载站</p>
-
-<button onclick="startVerify()">点击进入</button>
-
-</div>
-
-<div id="verify">
-
-<h2>访问验证</h2>
-
-<p id="question"></p>
-
-<input id="answer" placeholder="请输入答案">
-
-<button onclick="submitAnswer()">提交</button>
-
-<p id="result"></p>
-
-</div>
-
+  <div id="start">
+    <h1>Access Gateway</h1>
+    <p>🎵苹果音乐下载站</p>
+    <button onclick="startVerify()">点击进入</button>
+  </div>
+  <div id="verify">
+    <h2>访问验证</h2>
+    <p id="question">正在获取题目...</p>
+    <input id="answer" placeholder="请输入答案">
+    <button onclick="submitAnswer()">提交</button>
+    <p id="result"></p>
+  </div>
 </div>
 
 <script>
+let currentQuestionIndex = null;
 
-const questions = [
-{q:"35*4？",a:"140"},
-{q:"anto（？）xiu（填汉字）",a:"西"},
-{q:"2+3",a:"6"},
-{q:"3 + 4 等于多少？",a:"12"},
-{q:"5 - 2 等于多少？",a:"10"},
-{q:"10 - 6 等于多少？",a:"60"}
-];
-
-let current;
-
-function startVerify(){
-
-document.getElementById("start").style.display="none";
-document.getElementById("verify").style.display="block";
-
-randomQuestion();
-
+// 进入验证页面
+function startVerify() {
+  document.getElementById("start").style.display = "none";
+  document.getElementById("verify").style.display = "block";
+  fetchQuestion();
 }
 
-function randomQuestion(){
-
-current = questions[Math.floor(Math.random()*questions.length)];
-
-document.getElementById("question").innerText = current.q;
-
+// 获取题目
+async function fetchQuestion() {
+  try {
+    const res = await fetch("https://sweet-salad-4a33.sadnohikori-952.workers.dev/get-question");
+    const data = await res.json();
+    document.getElementById("question").innerText = data.question;
+    currentQuestionIndex = data.index;
+  } catch (e) {
+    document.getElementById("question").innerText = "无法获取题目，请刷新页面";
+    console.error(e);
+  }
 }
 
-function submitAnswer(){
+// 提交答案生成 token
+async function submitAnswer() {
+  const ans = document.getElementById("answer").value.trim();
+  try {
+    const res = await fetch("https://sweet-salad-4a33.sadnohikori-952.workers.dev/generate-token", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ answer: ans, questionIndex: currentQuestionIndex })
+    });
+    const data = await res.json();
 
-let ans = document.getElementById("answer").value.trim();
-
-if(ans === current.a){
-
-let token = Math.random().toString(36).substring(2,12);
-
-document.getElementById("result").style.color="#9cff9c";
-document.getElementById("result").innerText="验证成功，正在进入...";
-
-setTimeout(function(){
-
-location.href="https://redrev.pages.dev/?token="+token;
-
-},1000);
-
-}else{
-
-document.getElementById("result").innerText="答案错误，请重试";
-
+    if(data.token) {
+      document.getElementById("result").style.color = "#9cff9c";
+      document.getElementById("result").innerText = "验证成功，正在进入...";
+      setTimeout(() => {
+        location.href = "https://sweet-salad-4a33.sadnohikori-952.workers.dev/protected?token=" + data.token;
+      }, 1000);
+    } else {
+      document.getElementById("result").innerText = data.error || "答案错误，请重试";
+      fetchQuestion(); // 答错重新获取题目
+    }
+  } catch(e) {
+    document.getElementById("result").innerText = "请求失败，请重试";
+    console.error(e);
+  }
 }
-
-}
-
 </script>
 
 </body>
